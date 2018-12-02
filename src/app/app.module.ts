@@ -13,6 +13,15 @@ import { SettingsPageModule } from './settings/settings.module';
 
 import { CommonComponentsModule } from './common-components/common-components.module';
 
+var config = {
+  apiKey: "AIzaSyAfYQfWlpMx3H6aOZ6pkEnWEM4QK00-Bvs",
+  authDomain: "mgoos-mvp.firebaseapp.com",
+  databaseURL: "https://mgoos-mvp.firebaseio.com",
+  projectId: "mgoos-mvp",
+  storageBucket: "mgoos-mvp.appspot.com",
+  messagingSenderId: "949519506589"
+};
+
 @NgModule({
   declarations: [AppComponent],
   entryComponents: [],

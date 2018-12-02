@@ -1,0 +1,7 @@
+{
+  "name": "mgoos",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}

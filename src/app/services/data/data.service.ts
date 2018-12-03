@@ -4,7 +4,15 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class DataService {
-  profileDate: any;
+  private profileDate: any;
 
   constructor() { }
+
+  getProfileData() {
+    return this.profileDate;
+  }
+
+  setProfileData(pd: any) {
+    this.profileDate = pd;
+  }
 }

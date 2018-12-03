@@ -10,8 +10,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { SettingsPageModule } from './settings/settings.module';
-
 import { CommonComponentsModule } from './common-components/common-components.module';
+
+import * as firebase from 'firebase';
 
 var config = {
   apiKey: "AIzaSyAfYQfWlpMx3H6aOZ6pkEnWEM4QK00-Bvs",
@@ -21,6 +22,7 @@ var config = {
   storageBucket: "mgoos-mvp.appspot.com",
   messagingSenderId: "949519506589"
 };
+firebase.initializeApp(config);
 
 @NgModule({
   declarations: [AppComponent],

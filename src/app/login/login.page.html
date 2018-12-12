@@ -1,11 +1,18 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Login</ion-title>
+      <ion-title>
+          MGooS - Socialiaze with Music
+      </ion-title>
   </ion-toolbar>
 </ion-header>
-
 <ion-content padding>
-  <ion-button (click)="onLogin();">
-    Login with <ion-icon name="logo-facebook"></ion-icon>
-  </ion-button>
-</ion-content>
+  <ion-img src="assets/mgoos_logo_ori.gif"></ion-img>
+
+  <div class="content-center">
+    <div class="intro">
+      Tap on the button below to login with Facebook
+    </div>
+
+    <ion-button color="primary" expand="full" (click)="onLogin();">Login with Facebook <ion-icon name="logo-facebook" slot="end"></ion-icon></ion-button>
+  </div>
+</ion-content> 

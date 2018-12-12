@@ -11,6 +11,16 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-
+<ion-content padding class="page-bg">
+    <div>
+        <ion-img class="profile-image" [src]="objUserProfile.picture_url"></ion-img>
+    </div>
+    <div class="intro">
+        <h3>{{objUserProfile.full_name}}</h3>
+        <h6>{{objUserProfile.email}}</h6>
+    </div>
+    <div>Musical Network</div>
+    <ion-item-list>
+        <ion-item></ion-item>
+    </ion-item-list>
 </ion-content>

@@ -6,13 +6,14 @@ import { HeaderComponent } from './header/header.component';
 import { FeedAudioItemComponent } from './feed-audio-item/feed-audio-item.component';
 import { MiniPlayerComponent } from './mini-player/mini-player.component';
 import { ItemFeedPlayerComponent } from './item-feed-player/item-feed-player.component';
+import { UploadComponent } from './upload/upload.component';
 
 @NgModule({
   declarations: [
     HeaderComponent, 
     FeedAudioItemComponent, 
     MiniPlayerComponent, 
-    ItemFeedPlayerComponent
+    ItemFeedPlayerComponent, UploadComponent
   ],
   imports: [
     CommonModule,
@@ -22,7 +23,7 @@ import { ItemFeedPlayerComponent } from './item-feed-player/item-feed-player.com
     HeaderComponent, 
     FeedAudioItemComponent, 
     MiniPlayerComponent, 
-    ItemFeedPlayerComponent
+    ItemFeedPlayerComponent, UploadComponent
   ]
 })
 export class CommonComponentsModule { }

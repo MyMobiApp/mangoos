@@ -1,38 +1,65 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Facebook, FacebookLoginResponse } from '@ionic-native/facebook/ngx';
 
 import { DataService } from '../services/data/data.service';
 import { FirebaseDBService } from '../services/firebase-db/firebase-db.service';
+import * as firebase from 'firebase';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  providers: [Facebook, DataService, FirebaseDBService]
+  providers: [Facebook]
 })
 export class LoginPage implements OnInit {
-  objDataService: DataService;
-  objFirebaseDBService: FirebaseDBService;
   
-  constructor(private fb: Facebook) { }
+  constructor(private objFB: Facebook, 
+              private objRouter: Router,
+              private objDataService: DataService,
+              private objFirebaseDBService: FirebaseDBService) { 
+
+              }
 
   ngOnInit() {
+    /*var _me_ = this;
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        _me_.objRouter.navigateByUrl('/tabs'); //to the page where user navigates after login
+        // User is signed in.
+      } else {
+        _me_.objRouter.navigateByUrl(''); // to the login page as user is not logged in
+        // No user is signed in.
+      }
+    });*/
   }
 
   onLogin() {
-    this.fb.login(['public_profile', 'user_friends', 'email'])
+    var _me_ = this;
+
+    this.objFB.login(['public_profile', 'user_friends', 'email'])
         .then((res: FacebookLoginResponse) => {
-          this.fb.api('me?fields=id,name,email,first_name,picture.width(720).height(720).as(picture_large)', [])
+          this.objFB.api('me?fields=id,name,email,first_name,last_name,picture.width(720).height(720).as(picture_large)', [])
             .then(profile => {
               var userData = {
                 email: profile['email'], 
                 first_name: profile['first_name'], 
-                picture: profile['picture_large']['data']['url'], 
-                username: profile['name']
+                last_name: profile['last_name'],
+                picture_url: profile['picture_large']['data']['url'], 
+                full_name: profile['name']
               };
+              const facebookCredential = firebase.auth.FacebookAuthProvider
+              .credential(res.authResponse.accessToken);
 
-              this.objDataService.setProfileData(userData);
+              firebase.auth().signInWithCredential(facebookCredential)
+              .then( success => { 
+                console.log("Firebase success: " + JSON.stringify(success)); 
+              });
+
+              _me_.objDataService.setProfileData(userData);
               console.log('Logged into Facebook!', userData);
+              _me_.objRouter.navigateByUrl('/tabs');
             })
         })
         .catch(e => console.log('Error logging into Facebook', e));

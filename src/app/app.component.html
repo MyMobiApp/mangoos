@@ -12,7 +12,7 @@
         <ion-content padding>
           <ion-list>
             <ion-menu-toggle *ngFor="let page of appMenuPages">
-              <ion-item [routerLink]="page.route" [routerDirection]="'root'">
+              <ion-item (click)="onMenuItemClick(page.route, page.callBack)" [routerDirection]="'root'">
                 <ion-icon slot="start" [name]="page.icon"></ion-icon>
                 <ion-label>{{page.title}}</ion-label>
               </ion-item>

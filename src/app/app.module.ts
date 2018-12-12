@@ -12,17 +12,13 @@ import { AppComponent } from './app.component';
 import { SettingsPageModule } from './settings/settings.module';
 import { CommonComponentsModule } from './common-components/common-components.module';
 
-import * as firebase from 'firebase';
+import { AngularFireModule } from 'angularfire2';
+import { AngularFireAuthModule } from 'angularfire2/auth';
+import { AngularFirestoreModule } from 'angularfire2/firestore';
 
-var config = {
-  apiKey: "AIzaSyAfYQfWlpMx3H6aOZ6pkEnWEM4QK00-Bvs",
-  authDomain: "mgoos-mvp.firebaseapp.com",
-  databaseURL: "https://mgoos-mvp.firebaseio.com",
-  projectId: "mgoos-mvp",
-  storageBucket: "mgoos-mvp.appspot.com",
-  messagingSenderId: "949519506589"
-};
-firebase.initializeApp(config);
+import { DataService } from '../app/services/data/data.service';
+
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [AppComponent],
@@ -32,11 +28,15 @@ firebase.initializeApp(config);
     IonicModule.forRoot(), 
     AppRoutingModule, 
     SettingsPageModule,
-    CommonComponentsModule 
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule,
+    AngularFireAuthModule,
+    CommonComponentsModule
   ],
   providers: [
     StatusBar,
     SplashScreen,
+    DataService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

@@ -15,9 +15,9 @@ import { CommonComponentsModule } from './common-components/common-components.mo
 import { AngularFireModule } from 'angularfire2';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
+import { AngularFireStorageModule } from 'angularfire2/storage';
 
 import { DataService } from '../app/services/data/data.service';
-
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -31,6 +31,7 @@ import { environment } from '../environments/environment';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,
+    AngularFireStorageModule,
     CommonComponentsModule
   ],
   providers: [

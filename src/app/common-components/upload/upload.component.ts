@@ -5,10 +5,13 @@ import { AlertController, ToastController } from '@ionic/angular';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { File } from '@ionic-native/file/ngx';
 
+import { DataService } from 'src/app/services/data/data.service';
+
 @Component({
   selector: 'app-upload',
   templateUrl: './upload.component.html',
-  styleUrls: ['./upload.component.scss']
+  styleUrls: ['./upload.component.scss'],
+  providers: [FileChooser, File]
 })
 export class UploadComponent implements OnInit {
 
@@ -23,6 +26,7 @@ export class UploadComponent implements OnInit {
 
   constructor(private db: AngularFirestore, 
               private storage: AngularFireStorage, 
+              private dataService: DataService,
               private alertCtrl: AlertController, 
               private toastCtrl: ToastController,
               private fileChooser: FileChooser,
@@ -82,11 +86,11 @@ export class UploadComponent implements OnInit {
   }
 
   async uploadMP3(buffer, name) {
-    let userID = "";
-    let sAlbum = "";
+    let userID = `${this.dataService.getProfileData().handle}`;
+    let sAlbum = "-";
     let blob = new Blob([buffer], {type: 'audio/mpeg'});
 
-    this.task = this.storage.ref(`${userID}`+'/'+`${sAlbum}`+'/'+name).put(blob);
+    this.task = this.storage.ref(`${userID}/`+`${sAlbum}`+`/${new Date().getTime()}-`+name).put(blob);
     /*.then(d => {
       console.log('Upload Successful');
     }).catch(error => {

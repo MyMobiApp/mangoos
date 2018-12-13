@@ -9,7 +9,7 @@ export class DataService {
 
   constructor(private fireDBService: FirebaseDBService) { }
 
-  public getProfileData() {
+  public getProfileData() : UserProfile {
     console.log("Returning ProfileData: " + JSON.stringify(this.profileData));
     return this.profileData;
   }

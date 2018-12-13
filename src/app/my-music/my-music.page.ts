@@ -1,10 +1,5 @@
 import { Component } from '@angular/core';
-import { AngularFirestore } from 'angularfire2/firestore';
-import { AngularFireStorage, AngularFireUploadTask } from 'angularfire2/storage';
-import { map } from 'rxjs/operators';
-import { AlertController, ToastController } from '@ionic/angular';
-import { FileChooser } from '@ionic-native/file-chooser/ngx';
-import { File } from '@ionic-native/file/ngx';
+
 
 @Component({
   selector: 'app-my-music',
@@ -15,22 +10,17 @@ export class MyMusicPage {
   // Tutorial
   // https://www.youtube.com/watch?v=Pi6AtssyaNw
 
-  constructor(private db: AngularFirestore, 
-              private storage: AngularFireStorage, 
-              private alertCtrl: AlertController, 
-              private toastCtrl: ToastController,
-              private fileChooser: FileChooser,
-              private objFile: File) {
+  constructor() {
 
   }
 
-  getMP3Files() {
+  /*getMP3Files() {
     let ref = this.db.collection('files');
 
-    /*return ref.snapshotChanges()
+    return ref.snapshotChanges()
     .map(changes => {
       return changes.map(c => ({ key: c.payload.key, ...c.payload.val() }));
-    });*/
+    });
   }
 
   uploadToStorage( information : any ) : AngularFireUploadTask {
@@ -54,5 +44,5 @@ export class MyMusicPage {
     let storagePath = file.storagePath;
 
     this.storage.ref(storagePath).delete();
-  }
+  }*/
 }

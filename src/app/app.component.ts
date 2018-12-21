@@ -60,16 +60,16 @@ export class AppComponent {
 
           _me_.objFirebaseDBService.getUserProfile(user.email).then(data => {
             _me_.objDataService.saveProfileData(data);
+            _me_.objRouter.navigateByUrl('/tabs'); //to the page where user navigates after login
+            //alert("Hiding splash screen");
+            this.splashScreen.hide();
           });
-          
-          _me_.objRouter.navigateByUrl('/tabs'); //to the page where user navigates after login
           // User is signed in.
         } else {
+          this.splashScreen.hide();
           _me_.objRouter.navigateByUrl(''); // to the login page as user is not logged in
           // No user is signed in.
         }
-
-        this.splashScreen.hide();
       });
     });
   }

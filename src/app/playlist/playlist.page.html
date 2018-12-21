@@ -2,16 +2,14 @@
 
 <ion-content>
   <ion-list>
-    <ion-list-header>
-      <ion-label>
-        Follow us on Twitter
-      </ion-label>
-    </ion-list-header>
-    <ion-item>
-      <ion-label>
-        <ion-icon name="logo-ionic" slot="start"></ion-icon>
-        @ionicframework
-      </ion-label>
-    </ion-item>
+    <ion-reorder-group disabled="false" (ionItemReorder)="onReorderPlaylist($event)">
+      <ion-item *ngFor="let mp3 of playlist; let i = index" (click)="Play(i);">
+        <ion-label>
+          <ion-icon name="musical-notes" slot="start"></ion-icon>
+          {{mp3.mp3Data.albumName}} / {{mp3.mp3Data.customName}}
+        </ion-label>
+        <ion-reorder></ion-reorder>
+      </ion-item>
+    </ion-reorder-group>
   </ion-list>
 </ion-content>

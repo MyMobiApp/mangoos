@@ -1,11 +1,14 @@
 <ion-toolbar color="{{sColor}}">
   <ion-buttons slot="start">
-    <ion-button size="small">
+    <ion-button size="small" (click)="onPlay();" ng-if="!bIsPlaying">
       <ion-icon slot="icon-only" name="play"></ion-icon>
     </ion-button>
-    <ion-button size="small" ng-disabled="all">
+    <ion-button size="small" (click)="onPause();" ng-if="bIsPlaying">
+        <ion-icon slot="icon-only" name="pause"></ion-icon>
+      </ion-button>
+    <ion-button size="small" ng-disabled="all" (click)="onStop();">
       <ion-icon slot="icon-only" name="square"></ion-icon>
     </ion-button>
   </ion-buttons>
-  <ion-range></ion-range>
+  <ion-range min="0" max="nDuration" step="1"></ion-range>
 </ion-toolbar>

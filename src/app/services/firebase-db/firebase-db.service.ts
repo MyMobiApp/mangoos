@@ -29,6 +29,15 @@ export interface Playlist {
 
 }
 
+export interface FileMetaInfo {
+  createdAt:    string;
+  fileName:     string;
+  customName:   string;
+  albumName:    string;
+  fullPath:     string;
+  contentType:  string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -135,5 +144,58 @@ export class FirebaseDBService {
 
   updateFeedItem(feeditem: FeedItem, id: any) {
     return this.feedItemCollection.doc<FeedItem>(id).update(feeditem);
+  }
+
+  saveMyMP3(handle: string, mp3MetaInfo: FileMetaInfo) {
+    const createdAt   = mp3MetaInfo.createdAt;
+    const fileName    = mp3MetaInfo.fileName;
+    const customName  = mp3MetaInfo.customName;
+    const albumName   = mp3MetaInfo.albumName
+    const fullPath    = mp3MetaInfo.fullPath;
+    const contentType = mp3MetaInfo.contentType;
+    
+    this.objFirestore.doc(`mp3Collection/${handle}`).collection(albumName).add({
+      createdAt,
+      fileName,
+      customName,
+      albumName,
+      fullPath,
+      contentType
+    })
+    .then(function() {
+      console.log("Document successfully written!");
+    })
+    .catch(function(error) {
+        console.error("Error writing document: ", error);
+    });
+  }
+
+  /*let ref = this.db.collection('files');
+
+    return ref.snapshotChanges()
+    .map(changes => {
+      return changes.map(c => ({ key: c.payload.key, ...c.payload.val() }));
+    });*/
+  getMP3List(handle: string, album: string) : Promise<any> {
+    
+    return new Promise((resolve, reject) => { 
+      this.objFirestore.collection('mp3Collection').doc(handle).collection(album)
+        .get().subscribe(res => {
+          //alert(res.size);
+          if (res.size > 0)
+          {
+            let dataAry = Array();
+            res.forEach(function(doc) {
+              dataAry.push({'id': doc.id, 'data': doc.data()})
+              //alert(doc.id + " => " + JSON.stringify(doc.data()));
+              // doc.data() is never undefined for query doc snapshots
+            });
+            resolve(dataAry);
+          }
+          else {
+            reject();
+          }
+        });
+    });
   }
 }

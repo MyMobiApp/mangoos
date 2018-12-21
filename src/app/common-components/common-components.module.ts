@@ -7,13 +7,14 @@ import { FeedAudioItemComponent } from './feed-audio-item/feed-audio-item.compon
 import { MiniPlayerComponent } from './mini-player/mini-player.component';
 import { ItemFeedPlayerComponent } from './item-feed-player/item-feed-player.component';
 import { UploadComponent } from './upload/upload.component';
+import { ProgressBarComponent } from './progress-bar/progress-bar.component';
 
 @NgModule({
   declarations: [
     HeaderComponent, 
     FeedAudioItemComponent, 
     MiniPlayerComponent, 
-    ItemFeedPlayerComponent, UploadComponent
+    ItemFeedPlayerComponent, UploadComponent, ProgressBarComponent
   ],
   imports: [
     CommonModule,
@@ -23,7 +24,7 @@ import { UploadComponent } from './upload/upload.component';
     HeaderComponent, 
     FeedAudioItemComponent, 
     MiniPlayerComponent, 
-    ItemFeedPlayerComponent, UploadComponent
+    ItemFeedPlayerComponent, UploadComponent, ProgressBarComponent
   ]
 })
 export class CommonComponentsModule { }

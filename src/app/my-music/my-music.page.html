@@ -1,17 +1,27 @@
 <app-header sTitle="MGooS"></app-header>
 
 <ion-content>
+  <app-progress-bar [progress]="percent" color="primary"></app-progress-bar>
+
   <ion-list>
     <ion-list-header>
       <ion-label>
-        Follow us on Twitter
+        Your uploaded MP3s
       </ion-label>
     </ion-list-header>
-    <ion-item>
+    <ion-item *ngFor="let mp3 of mp3List">
       <ion-label>
-        <ion-icon name="logo-ionic" slot="start"></ion-icon>
-        @ionicframework
+        <ion-icon name="musical-notes" slot="start"></ion-icon>
+        {{mp3.data.albumName}} / {{mp3.data.customName}}
       </ion-label>
+      <ion-buttons slot="end">
+        <ion-button shape="round" color="tertiary" (click)="addToPlaylist(mp3.id, mp3.data);$event.stopPropagation();">
+          <ion-icon slot="icon-only" name="redo"></ion-icon>
+        </ion-button>
+        <ion-button shape="round" color="tertiary" (click)="onSettings(mp3.id, mp3.data);$event.stopPropagation();">
+          <ion-icon slot="icon-only" name="settings"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </ion-item>
   </ion-list>
 </ion-content>

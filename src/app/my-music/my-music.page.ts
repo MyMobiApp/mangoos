@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { DataService } from '../services/data/data.service';
+import { FirebaseDBService, FileMetaInfo } from '../services/firebase-db/firebase-db.service';
+import { PlayService } from '../services/play/play.service';
 
 
 @Component({
@@ -10,20 +13,48 @@ export class MyMusicPage {
   // Tutorial
   // https://www.youtube.com/watch?v=Pi6AtssyaNw
 
-  constructor() {
+  percent: any = 0;
+  mp3List: any;
+  
+  constructor(private objDataService: DataService,
+              private objFirestoreDBService: FirebaseDBService,
+              private objPlayService: PlayService) {
+    let _me_ = this;
 
+    this.objDataService.mp3UploadObservable.subscribe(data => {
+      _me_.percent = _me_.objDataService.getmp3UploadProgress().toFixed(0);
+    });
+
+    this.getMP3Files();
   }
 
-  /*getMP3Files() {
-    let ref = this.db.collection('files');
+  ionViewDidEnter() {
+    //alert("ionViewWillEnter");
+    this.getMP3Files();
+  }
 
-    return ref.snapshotChanges()
-    .map(changes => {
-      return changes.map(c => ({ key: c.payload.key, ...c.payload.val() }));
+  addToPlaylist(id: string, mp3Data: FileMetaInfo) {
+    this.objPlayService.enqueue(id, mp3Data);
+  }
+
+  onSettings(id: string, mp3Data: FileMetaInfo) {
+    alert("Settings Clicked");
+    //this.objPlayService.enqueue(id, mp3Data);
+  }
+
+  getMP3Files() {
+    let _me_ = this;
+    let handle = this.objDataService.getProfileData().handle;
+
+    this.objFirestoreDBService.getMP3List(handle, 'default').then(data => {
+      _me_.mp3List = data;
+      //alert(JSON.stringify(data));
+    }).catch(err => {
+      alert(JSON.stringify(err));
     });
   }
 
-  uploadToStorage( information : any ) : AngularFireUploadTask {
+  /*uploadToStorage( information : any ) : AngularFireUploadTask {
     let newName = `${new Date().getTime()}.txt`;
 
     return this.storage.ref('files/{newName}').putString(information);

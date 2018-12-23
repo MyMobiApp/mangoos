@@ -18,7 +18,7 @@
         <ion-button shape="round" color="tertiary" (click)="addToPlaylist(mp3.id, mp3.data);$event.stopPropagation();">
           <ion-icon slot="icon-only" name="redo"></ion-icon>
         </ion-button>
-        <ion-button shape="round" color="tertiary" (click)="onSettings(mp3.id, mp3.data);$event.stopPropagation();">
+        <ion-button shape="round" color="tertiary" (click)="onSettings(mp3.id, mp3.data);presentPopover($event);$event.stopPropagation();">
           <ion-icon slot="icon-only" name="settings"></ion-icon>
         </ion-button>
       </ion-buttons>

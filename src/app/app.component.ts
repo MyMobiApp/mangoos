@@ -53,7 +53,7 @@ export class AppComponent {
     var _me_ = this;
 
     this.platform.ready().then(() => {
-      this.statusBar.styleDefault();
+      this.statusBar.styleLightContent();
       this.objAFAuth.auth.onAuthStateChanged(user => {
         if (user) {
           console.log("User: " + JSON.stringify(user));
@@ -71,6 +71,7 @@ export class AppComponent {
           // No user is signed in.
         }
       });
+      
     });
   }
 
@@ -85,4 +86,6 @@ export class AppComponent {
   onSignOut() {
     firebase.auth().signOut();
   }
+
+  
 }

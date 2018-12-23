@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { DataService } from '../services/data/data.service';
 import { FirebaseDBService, FileMetaInfo } from '../services/firebase-db/firebase-db.service';
 import { PlayService } from '../services/play/play.service';
+import { ToastController, PopoverController } from '@ionic/angular';
 
+import { MP3SettingsPage } from '../mp3-settings/mp3-settings.page';
 
 @Component({
   selector: 'app-my-music',
@@ -15,14 +17,23 @@ export class MyMusicPage {
 
   percent: any = 0;
   mp3List: any;
+  popoverData: any;
   
   constructor(private objDataService: DataService,
               private objFirestoreDBService: FirebaseDBService,
-              private objPlayService: PlayService) {
+              private objPlayService: PlayService,
+              private toastCtrl: ToastController,
+              private popoverCtrl: PopoverController,
+              private zone: NgZone) {
     let _me_ = this;
 
     this.objDataService.mp3UploadObservable.subscribe(data => {
-      _me_.percent = _me_.objDataService.getmp3UploadProgress().toFixed(0);
+      _me_.percent = Math.round(_me_.objDataService.getmp3UploadProgress());
+     /*
+     this.zone.run(() => {
+      //console.log('UI has refreshed');
+    });
+     */
     });
 
     this.getMP3Files();
@@ -33,12 +44,20 @@ export class MyMusicPage {
     this.getMP3Files();
   }
 
-  addToPlaylist(id: string, mp3Data: FileMetaInfo) {
+  async addToPlaylist(id: string, mp3Data: FileMetaInfo) {
     this.objPlayService.enqueue(id, mp3Data);
+
+    let toast = await this.toastCtrl.create({
+      message: mp3Data.customName + ' added to the playlist.',
+      position: 'top',
+      duration: 3000
+    });
+    toast.present();
   }
 
   onSettings(id: string, mp3Data: FileMetaInfo) {
     alert("Settings Clicked");
+    this.popoverData = {'id': id, 'mp3Data': mp3Data};
     //this.objPlayService.enqueue(id, mp3Data);
   }
 
@@ -52,6 +71,22 @@ export class MyMusicPage {
     }).catch(err => {
       alert(JSON.stringify(err));
     });
+  }
+
+  async presentPopover(ev: any) {
+    let _me_ = this;
+
+    const popover = await this.popoverCtrl.create({
+      component: MP3SettingsPage,
+      componentProps: _me_.popoverData,
+      event: ev,
+      translucent: true
+    });
+    return await popover.present();
+  }
+
+  close() {
+    this.popoverCtrl.dismiss();
   }
 
   /*uploadToStorage( information : any ) : AngularFireUploadTask {

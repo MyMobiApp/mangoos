@@ -1,14 +1,19 @@
 <ion-toolbar color="{{sColor}}">
-  <ion-buttons slot="start">
-    <ion-button size="small" (click)="onPlay();" ng-if="!bIsPlaying">
+  <ion-buttons slot="start" *ngIf="mediaStatus == 1">
+    <ion-spinner name="lines-small"></ion-spinner>
+  </ion-buttons>
+  <ion-buttons slot="start" *ngIf="mediaStatus != 1">
+    <ion-button size="small" (click)="onPlay();" *ngIf="mediaStatus != 2">
       <ion-icon slot="icon-only" name="play"></ion-icon>
     </ion-button>
-    <ion-button size="small" (click)="onPause();" ng-if="bIsPlaying">
+    <ion-button size="small" (click)="onPause();" *ngIf="mediaStatus == 2">
         <ion-icon slot="icon-only" name="pause"></ion-icon>
       </ion-button>
-    <ion-button size="small" ng-disabled="all" (click)="onStop();">
+    <ion-button size="small" ng-disabled="all" (click)="onStop();" *ngIf="mediaStatus > 1 && mediaStatus != 4">
       <ion-icon slot="icon-only" name="square"></ion-icon>
     </ion-button>
   </ion-buttons>
-  <ion-range min="0" max="nDuration" step="1"></ion-range>
+  <ion-range min="0" max="{{nDuration}}" value="{{nTimeSpent}}" (ionChange)="onPlayProgressChange($event);">
+    <ion-label slot="end" (click)="onTimerClicked();">{{sTimeSpent}}</ion-label>
+  </ion-range>
 </ion-toolbar>

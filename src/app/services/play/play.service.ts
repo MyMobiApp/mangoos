@@ -30,6 +30,10 @@ export class PlayService {
     this.playItemObservable.subscribe(data => {});
   }
 
+  getCurrentPlayIndex() {
+    return this.playIndex;
+  }
+
   getCurrentMP3() {
     return this.playlist[this.playIndex].mp3Data.fullPath;
   }
@@ -42,6 +46,8 @@ export class PlayService {
     } else {
       this.playIndex++; // Increment it
     }
+
+    this.playlistObserver.next(true);
   }
 
   setCurrentMP3(index: number, bPlay: boolean) {
@@ -56,22 +62,28 @@ export class PlayService {
     this.playlist.push({'id': id, 'mp3Data': mp3Data});
     
     this.playlistObserver.next(true);
-    alert(JSON.stringify(this.playlist));
   }
 
   dequeue(id: string) {
+    let idToMove = this.playlist[this.playIndex].id;
+
     this.playlist.splice(this.playlist.findIndex( element => {
       return element.id === id;
     }), 1);
+
+    if(id != idToMove) {
+      this.adjustPlayIndex(idToMove);
+    }
 
     this.playlistObserver.next(true);
   }
 
   moveTo(indexes) {
-    /*let element = this.playlist[indexes.from];
-    this.playlist.splice(indexes.from, 1);
-    this.playlist.splice(indexes.to, 0, element);*/
+    let idToMove = this.playlist[this.playIndex].id;
+
     this.playlist.splice(indexes.detail.to, 0, this.playlist.splice(indexes.detail.from, 1)[0]);
+
+    this.adjustPlayIndex(idToMove);
   }
 
   moveToID(id: string, toIndex: number) {
@@ -80,5 +92,21 @@ export class PlayService {
     });
 
     this.playlist.splice(toIndex, 0, this.playlist.splice(fromIndex, 1)[0]);
+  }
+
+  adjustPlayIndex(playIndexID:string) {
+    this.playIndex = this.playlist.findIndex( element => {
+      return element.id === playIndexID;
+    });
+
+    this.playlistObserver.next(true);
+  }
+
+  triggerPlaylistObserver() {
+    this.playlistObserver.next(true);
+  }
+
+  triggerPlayItemObserver() {
+    this.playItemObserver.next(true);
   }
 }

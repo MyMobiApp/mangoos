@@ -14,11 +14,11 @@ export class FirebaseStorageService {
   }
 
   getMP3DownloadURL(fullPath: string) : Promise<string> {
-    alert("Test");
+    
     return new Promise((resolve, reject) => { 
         this.objFirebaseStorage.ref(fullPath).getDownloadURL().subscribe(url => {
           if(url) {
-            alert(url);
+            //alert(url);
             resolve(url);
           }
           else {

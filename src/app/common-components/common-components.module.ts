@@ -8,6 +8,7 @@ import { MiniPlayerComponent } from './mini-player/mini-player.component';
 import { ItemFeedPlayerComponent } from './item-feed-player/item-feed-player.component';
 import { UploadComponent } from './upload/upload.component';
 import { ProgressBarComponent } from './progress-bar/progress-bar.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,9 @@ import { ProgressBarComponent } from './progress-bar/progress-bar.component';
   ],
   imports: [
     CommonModule,
-    IonicModule
+    IonicModule,
+    FormsModule,     //https://github.com/ionic-team/ionic/issues/14868
+    ReactiveFormsModule
   ],
   exports: [
     HeaderComponent, 

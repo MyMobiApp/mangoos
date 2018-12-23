@@ -10,6 +10,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
 import { SettingsPageModule } from './settings/settings.module';
+import { MP3SettingsPageModule } from './mp3-settings/mp3-settings.module';
 import { CommonComponentsModule } from './common-components/common-components.module';
 
 import { AngularFireModule } from 'angularfire2';
@@ -24,10 +25,11 @@ import { environment } from '../environments/environment';
   declarations: [AppComponent],
   entryComponents: [],
   imports: [
-    BrowserModule, 
-    IonicModule.forRoot(), 
+    BrowserModule,
+    IonicModule.forRoot(),
     AppRoutingModule, 
     SettingsPageModule,
+    MP3SettingsPageModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireAuthModule,

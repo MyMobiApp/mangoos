@@ -19,6 +19,7 @@ import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { AngularFireStorageModule } from 'angularfire2/storage';
 
 import { DataService } from '../app/services/data/data.service';
+import { PlayService } from '../app/services/play/play.service';
 import { environment } from '../environments/environment';
 
 @NgModule({
@@ -40,6 +41,7 @@ import { environment } from '../environments/environment';
     StatusBar,
     SplashScreen,
     DataService,
+    PlayService,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

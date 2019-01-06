@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { Platform } from '@ionic/angular';
@@ -38,6 +38,7 @@ export class AppComponent {
     }
   ];
   constructor(
+    private zone: NgZone,
     private objRouter: Router,
     private objAFAuth: AngularFireAuth,
     private platform: Platform,
@@ -60,7 +61,11 @@ export class AppComponent {
 
           _me_.objFirebaseDBService.getUserProfile(user.email).then(data => {
             _me_.objDataService.saveProfileData(data);
-            _me_.objRouter.navigateByUrl('/tabs'); //to the page where user navigates after login
+            
+            _me_.zone.run(() => {
+              _me_.objRouter.navigateByUrl('/tabs'); //to the page where user navigates after login
+            });
+            
             //alert("Hiding splash screen");
             this.splashScreen.hide();
           });

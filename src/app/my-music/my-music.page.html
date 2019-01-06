@@ -3,10 +3,22 @@
 <ion-content>
   <app-progress-bar [progress]="percent" color="primary"></app-progress-bar>
 
+  <ion-refresher (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content 
+      pullingIcon="arrow-dropdown" 
+      pullingText="Pull to refresh" 
+      refreshingSpinner="circles" 
+      refreshingText="Refreshing...">
+    </ion-refresher-content>
+  </ion-refresher>
+
   <ion-list>
     <ion-list-header>
-      <ion-label>
+      <ion-label *ngIf="!bLoading">
         Your uploaded MP3s
+      </ion-label>
+      <ion-label *ngIf="bLoading">
+        Please wait <ion-spinner></ion-spinner>
       </ion-label>
     </ion-list-header>
     <ion-item *ngFor="let mp3 of mp3List">
@@ -23,5 +35,9 @@
         </ion-button>
       </ion-buttons>
     </ion-item>
+    <ion-item></ion-item>
+    <ion-item></ion-item>
+    <ion-item></ion-item>
   </ion-list>
+
 </ion-content>

@@ -14,6 +14,9 @@ export class PlayService {
 
   public  playItemObservable: Observable<number>;
   private playItemObserver: any;
+
+  public  playStopObservable: Observable<number>;
+  private playStopObserver: any;
   
   constructor() {
     let _me_ = this; 
@@ -25,13 +28,22 @@ export class PlayService {
       _me_.playItemObserver = observer;
     });
 
+    this.playStopObservable = Observable.create(observer => {
+      _me_.playStopObserver = observer;
+    });
+
     // Dummy calls, to initialize respective observers
     this.playlistObservable.subscribe(data => {});
     this.playItemObservable.subscribe(data => {});
+    this.playStopObservable.subscribe(data => {});
   }
 
   getCurrentPlayIndex() {
     return this.playIndex;
+  }
+
+  getPlaylistLength() {
+    return this.playlist.length;
   }
 
   getCurrentMP3() {
@@ -54,7 +66,9 @@ export class PlayService {
     this.playIndex = index;
 
     if(bPlay) {
-      this.playItemObserver.next(true);
+      setTimeout(() => {
+        this.playItemObserver.next(true);
+      }, 1000);
     }
   }
 
@@ -73,6 +87,10 @@ export class PlayService {
 
     if(id != idToMove) {
       this.adjustPlayIndex(idToMove);
+    }
+    else {
+      // Stop mp3 play
+      this.playStopObserver.next(true);
     }
 
     this.playlistObserver.next(true);

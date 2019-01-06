@@ -50,13 +50,13 @@ export class PlaylistPage {
   }
 
   Play(mp3Obj) {
-    //this.objPlayService.setCurrentMP3(mp3Obj, true);
+    this.objPlayService.setCurrentMP3(mp3Obj, true);
   }
 
   async onRemoveFromPlaylist(mp3Obj) {
     let alert = await this.alertCtrl.create({
       header: 'Confirm Delete',
-      message: 'Do you want to delete "'+ mp3Obj.mp3Data.customName + '" mp3 from playlist?',
+      message: 'Do you want to remove "'+ mp3Obj.mp3Data.customName + '" mp3 from playlist?',
       buttons: [
         {
           text: 'Cancel',

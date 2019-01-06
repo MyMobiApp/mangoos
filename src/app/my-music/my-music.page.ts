@@ -16,7 +16,8 @@ export class MyMusicPage {
   // https://www.youtube.com/watch?v=Pi6AtssyaNw
 
   percent: any = 0;
-  mp3List: any;
+  mp3List: any = null;
+  bLoading: boolean = false;
   popoverData: any;
   
   constructor(private objDataService: DataService,
@@ -44,6 +45,13 @@ export class MyMusicPage {
     this.getMP3Files();
   }
 
+  doRefresh(event) {
+    //console.log('Begin async operation', event);
+
+    this.getMP3Files();
+    event.target.complete();
+  }
+
   async addToPlaylist(id: string, mp3Data: FileMetaInfo) {
     this.objPlayService.enqueue(id, mp3Data);
 
@@ -61,12 +69,14 @@ export class MyMusicPage {
     //this.objPlayService.enqueue(id, mp3Data);
   }
 
-  getMP3Files() {
+  async getMP3Files() {
     let _me_ = this;
     let handle = this.objDataService.getProfileData().handle;
 
-    this.objFirestoreDBService.getMP3List(handle, 'default').then(data => {
+    _me_.bLoading = true;
+    await this.objFirestoreDBService.getMP3List(handle, 'default').then(data => {
       _me_.mp3List = data;
+      _me_.bLoading = false;
       //alert(JSON.stringify(data));
     }).catch(err => {
       alert(JSON.stringify(err));

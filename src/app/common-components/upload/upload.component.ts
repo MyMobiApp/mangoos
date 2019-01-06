@@ -3,6 +3,7 @@ import { AngularFirestore } from 'angularfire2/firestore';
 import { AngularFireStorage, AngularFireUploadTask } from 'angularfire2/storage';
 import { AlertController, ToastController } from '@ionic/angular';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
+import { Chooser, ChooserResult } from '@ionic-native/chooser/ngx';
 import { File } from '@ionic-native/file/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
 
@@ -17,7 +18,7 @@ import { FileMetaInfo, FirebaseDBService } from 'src/app/services/firebase-db/fi
   selector: 'app-upload',
   templateUrl: './upload.component.html',
   styleUrls: ['./upload.component.scss'],
-  providers: [FileChooser, File, FilePath, BackgroundMode]
+  providers: [Chooser, FileChooser, File, FilePath, BackgroundMode]
 })
 export class UploadComponent implements OnInit {
 
@@ -37,9 +38,10 @@ export class UploadComponent implements OnInit {
               private objFirebaseDBService: FirebaseDBService,
               private storage: AngularFireStorage, 
               private dataService: DataService,
-              private alertCtrl: AlertController, 
-              private toastCtrl: ToastController,
+              //private alertCtrl: AlertController, 
+              //private toastCtrl: ToastController,
               private fileChooser: FileChooser,
+              private chooser: Chooser,
               private objFile: File,
               private objFilePath: FilePath,
               private backgroundMode: BackgroundMode,
@@ -49,6 +51,10 @@ export class UploadComponent implements OnInit {
 
   }
 
+  /*
+  * Function to choose file, can't apply MIME filter also we can't determine
+  * which file (MIME type) is selected.
+  */
   chooseMP3() {
     let _me_ = this;
 
@@ -72,7 +78,7 @@ export class UploadComponent implements OnInit {
 
           _me_.objFile.readAsArrayBuffer(dirPath, fileName).then(async buffer => {
             _me_.dataService.setMP3UploadProgress(0);
-            await _me_.uploadMP3(buffer, fileSysURL.name);
+            await _me_.uploadMP3(buffer, fileSysURL.name, 'audio/mpeg');
           }).catch(error => {
             alert('Read Array Buffer: ' + JSON.stringify(error));
             console.log(error);
@@ -93,12 +99,12 @@ export class UploadComponent implements OnInit {
     });
   }
 
-  async uploadMP3(buffer, name) {
+  async uploadMP3(buffer, name, mimeType) {
     let _me_ = this;
     
     let userID = `${this.dataService.getProfileData().handle}`;
     let sAlbum = "default";
-    let blob = new Blob([buffer], {type: 'audio/mpeg'});
+    let blob = new Blob([buffer], {type: mimeType});
     let fullPath = `${userID}/`+`${sAlbum}`+`/${new Date().getTime()}-`+name;
 
     this.backgroundMode.enable();
@@ -117,7 +123,7 @@ export class UploadComponent implements OnInit {
           customName:   name,
           albumName:    sAlbum,
           fullPath:     fullPath,
-          contentType:  'audio/mpeg'
+          contentType:  mimeType
         };
         _me_.storeInfoToDatabase(toSave);
       }
@@ -128,5 +134,51 @@ export class UploadComponent implements OnInit {
     let userID = `${this.dataService.getProfileData().handle}`;
 
     this.objFirebaseDBService.saveMyMP3(userID, metaInfo);
+  }
+
+  /*
+  * Function to choose any audio file, can apply MIME filter also we can determine
+  * which file (MIME type) is selected.
+  */
+  newChooseMP3() {
+    let _me_ = this;
+
+    this.objRouter.navigateByUrl("/tabs/(my-music:my-music)");
+    (async () => {
+      // With ionic 4 calling getFile function from object were not returning promise properly.
+      // So used this way. May be in next plugin release this gets fixed, till then this is the solution.
+      const fileInfo: ChooserResult = await (<any>window).chooser.getFile("audio/*");
+      //alert(fileInfo.uri);
+      _me_.objFile.resolveLocalFilesystemUrl(fileInfo.uri).then(fileSysURL => {
+        //alert(JSON.stringify(fileSysURL));
+        
+        _me_.objFilePath.resolveNativePath(fileInfo.uri) 
+        .then(filePath => {
+          //alert('Native Path: ' + filePath);
+
+          let dirPath = filePath;
+          let dirPathSegments = dirPath.split('/'); // Break the string to an array
+        
+          let fileName = dirPathSegments.pop(); // Remove last item from array
+          dirPath = dirPathSegments.join('/');
+
+          _me_.objFile.readAsArrayBuffer(dirPath, fileName).then(async buffer => {
+            _me_.dataService.setMP3UploadProgress(0);
+            await _me_.uploadMP3(buffer, fileSysURL.name, fileInfo.mediaType);
+          }).catch(error => {
+            alert('Read Array Buffer: ' + JSON.stringify(error));
+            console.log(error);
+          });
+        })
+        .catch(err => {
+          alert('Resolve Native Path : ' + err);
+          console.log(err)
+        });
+        
+      }).catch(error => {
+        alert('Local file system URL: ' + JSON.stringify(error));
+        console.log(error);
+      });
+    })();
   }
 }

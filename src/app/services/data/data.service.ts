@@ -33,7 +33,7 @@ export class DataService {
   }
 
   public getProfileData() : UserProfile {
-    console.log("Returning ProfileData: " + JSON.stringify(this.profileData));
+    //console.log("Returning ProfileData: " + JSON.stringify(this.profileData));
     return this.profileData;
   }
 

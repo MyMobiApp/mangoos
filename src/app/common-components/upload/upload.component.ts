@@ -107,33 +107,39 @@ export class UploadComponent implements OnInit {
     let blob = new Blob([buffer], {type: mimeType});
     let fullPath = `${userID}/`+`${sAlbum}`+`/${new Date().getTime()}-`+name;
 
-    this.backgroundMode.enable();
-    this.task = this.storage.ref(fullPath).put(blob);
+    var objDate = new Date();
+    let toSave = {
+      createdAt:    `${Date.now()}`,
+      createdAtISO: `${objDate.toISOString()}`,
+      fileName:     name,
+      customName:   name,
+      albumName:    sAlbum,
+      fullPath:     fullPath,
+      contentType:  mimeType
+    };
 
-    this.progress = this.task.percentageChanges();
-    this.progress.subscribe(value => {
-      _me_.dataService.setMP3UploadProgress(value);
+    _me_.storeInfoToDatabase(toSave).then(docRef =>{
+      _me_.backgroundMode.enable();
+      _me_.task = _me_.storage.ref(fullPath).put(blob);
 
-      if(value == 100) {
-        this.backgroundMode.disable();
+      _me_.progress = _me_.task.percentageChanges();
+      _me_.progress.subscribe(value => {
+        _me_.dataService.setMP3UploadProgress(value);
 
-        let toSave = {
-          createdAt:    `${Date.now()}`,
-          fileName:     name,
-          customName:   name,
-          albumName:    sAlbum,
-          fullPath:     fullPath,
-          contentType:  mimeType
-        };
-        _me_.storeInfoToDatabase(toSave);
-      }
+        if(value == 100) {
+          _me_.backgroundMode.disable();
+        }
+      }, (error) => {
+        _me_.objFirebaseDBService.deleteDocWithRef(docRef);
+        console.log("Error: " + error);
+      });
     });
   }
 
-  storeInfoToDatabase(metaInfo: FileMetaInfo) {
+  storeInfoToDatabase(metaInfo: FileMetaInfo) : Promise<any> {
     let userID = `${this.dataService.getProfileData().handle}`;
 
-    this.objFirebaseDBService.saveMyMP3(userID, metaInfo);
+    return this.objFirebaseDBService.saveMyMP3(userID, metaInfo);
   }
 
   /*

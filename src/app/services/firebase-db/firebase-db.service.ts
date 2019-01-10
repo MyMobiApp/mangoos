@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
+import { AngularFirestore, AngularFirestoreCollection, DocumentReference } from 'angularfire2/firestore';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -30,6 +30,7 @@ export interface Playlist {
 }
 
 export interface FileMetaInfo {
+  createdAtISO: string;
   createdAt:    string;
   fileName:     string;
   customName:   string;
@@ -146,27 +147,41 @@ export class FirebaseDBService {
     return this.feedItemCollection.doc<FeedItem>(id).update(feeditem);
   }
 
-  saveMyMP3(handle: string, mp3MetaInfo: FileMetaInfo) {
-    const createdAt   = mp3MetaInfo.createdAt;
-    const fileName    = mp3MetaInfo.fileName;
-    const customName  = mp3MetaInfo.customName;
-    const albumName   = mp3MetaInfo.albumName
-    const fullPath    = mp3MetaInfo.fullPath;
-    const contentType = mp3MetaInfo.contentType;
+  deleteDocWithRef(docRef: DocumentReference) {
+    this.objFirestore.doc(docRef.path).delete().then(() => {
+      // Deleted Successfully
+    }).catch(reason => {
+      console.log(reason);
+    });
+  }
+
+  saveMyMP3(handle: string, mp3MetaInfo: FileMetaInfo) : Promise<any> {
+    const createdAtISO  = mp3MetaInfo.createdAtISO;
+    const createdAt     = mp3MetaInfo.createdAt;
+    const fileName      = mp3MetaInfo.fileName;
+    const customName    = mp3MetaInfo.customName;
+    const albumName     = mp3MetaInfo.albumName
+    const fullPath      = mp3MetaInfo.fullPath;
+    const contentType   = mp3MetaInfo.contentType;
     
-    this.objFirestore.doc(`mp3Collection/${handle}`).collection(albumName).add({
-      createdAt,
-      fileName,
-      customName,
-      albumName,
-      fullPath,
-      contentType
-    })
-    .then(function() {
-      console.log("Document successfully written!");
-    })
-    .catch(function(error) {
-        console.error("Error writing document: ", error);
+    return new Promise((resolve, reject) => {
+      this.objFirestore.doc(`mp3Collection/${handle}`).collection(albumName).add({
+        createdAt,
+        createdAtISO,
+        fileName,
+        customName,
+        albumName,
+        fullPath,
+        contentType
+      })
+      .then(docRef => {
+        console.log("Document successfully written!");
+        resolve(docRef);
+      })
+      .catch(function(error) {
+          console.error("Error writing document: ", error);
+          reject(error);
+      });
     });
   }
 

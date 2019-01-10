@@ -1,10 +1,12 @@
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, ViewChild } from '@angular/core';
 import { DataService } from '../services/data/data.service';
 import { FirebaseDBService, FileMetaInfo } from '../services/firebase-db/firebase-db.service';
 import { PlayService } from '../services/play/play.service';
 import { ToastController, PopoverController } from '@ionic/angular';
 
 import { MP3SettingsPage } from '../mp3-settings/mp3-settings.page';
+import { ProgressBarComponent } from '../common-components/progress-bar/progress-bar.component';
+
 
 @Component({
   selector: 'app-my-music',
@@ -19,6 +21,7 @@ export class MyMusicPage {
   mp3List: any = null;
   bLoading: boolean = false;
   popoverData: any;
+  @ViewChild(ProgressBarComponent) progressBar: ProgressBarComponent;
   
   constructor(private objDataService: DataService,
               private objFirestoreDBService: FirebaseDBService,
@@ -30,11 +33,8 @@ export class MyMusicPage {
 
     this.objDataService.mp3UploadObservable.subscribe(data => {
       _me_.percent = Math.round(_me_.objDataService.getmp3UploadProgress());
-     /*
-     this.zone.run(() => {
-      //console.log('UI has refreshed');
-    });
-     */
+      _me_.progressBar.progress = _me_.percent;
+      //alert(_me_.percent);
     });
 
     this.getMP3Files();

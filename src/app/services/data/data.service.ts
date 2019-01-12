@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FirebaseDBService, UserProfile } from '../firebase-db/firebase-db.service';
+import { FirebaseDBService, UserProfile, FeedItem } from '../firebase-db/firebase-db.service';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -7,11 +7,13 @@ import { Observable } from 'rxjs';
 })
 export class DataService {
   private profileData: any;
+  private feedItem: FeedItem = null;
   private mp3UploadProgress: number = 0;
-  public  mp3UploadObservable: Observable<number>;
+  private  mp3UploadObservable: Observable<number>;
   private mp3UploadObserver: any;
 
-  constructor(private fireDBService: FirebaseDBService) {
+  private fireDBService: FirebaseDBService;
+  constructor() {
     let _me_ = this;
 
     this.mp3UploadObservable = Observable.create(observer => {
@@ -22,14 +24,31 @@ export class DataService {
     this.mp3UploadObservable.subscribe(data => {}); 
   }
 
+  ngOnInit() {
+    
+  }
+
+  public uploadEvent() {
+    return this.mp3UploadObservable;
+  }
+
   public getmp3UploadProgress() {
     return this.mp3UploadProgress;
+  }
+
+  public setPublicFeedItem(feedItem: FeedItem) {
+    this.feedItem = feedItem;
+  }
+
+  public getPublicFeedItem() : FeedItem {
+    return this.feedItem;
   }
 
   public setMP3UploadProgress(progress: number) {
     this.mp3UploadProgress = progress;
 
-    this.mp3UploadObserver.next(true);
+    this.mp3UploadObserver.next(progress);
+    //alert("In setMP3UploadProgress : "+ progress);
   }
 
   public getProfileData() : UserProfile {

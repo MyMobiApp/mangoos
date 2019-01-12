@@ -44,8 +44,8 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private objDataService: DataService,
-    private objFirebaseDBService: FirebaseDBService
+    public objDataService: DataService,
+    public objFirebaseDBService: FirebaseDBService
   ) {
     this.initializeApp();
   }

@@ -12,4 +12,12 @@ export class MP3SettingsPage implements OnInit {
   ngOnInit() {
   }
 
+  editMusicFile() {
+    alert("editMusicFile");
+  }
+
+  deleteMusicFile() {
+    alert("deleteMusicFile");
+  }
+
 }

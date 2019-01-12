@@ -1,18 +1,26 @@
-<ion-toolbar>
-  <div class="progress-outer">
-    <div class="progress-inner" [style.width]="progress + '%'">
-        {{progress}}%
+<div class="pb-container" *ngIf="bUploading">
+  <ion-toolbar class="tool-bar">
+    <div class="progress-outer">
+      <div class="progress-inner" [style.width]="progress + '%'">
+          <ion-text *ngIf="bStarting">
+              <ion-spinner name="dots"></ion-spinner>
+          </ion-text>
+          <ion-text *ngIf="!bStarting">{{progress}}%</ion-text>
+      </div>
     </div>
+  </ion-toolbar>
+  <div class="msg-div">
+    <ion-textarea rows="3" [(ngModel)]="feedMsg" placeholder="Post to public feed (message optional)"></ion-textarea>
   </div>
-  <ion-buttons slot="end">
-    <ion-button size="small">
-      <ion-icon slot="icon-only" name="cloud-upload"></ion-icon>
-    </ion-button>
-    <ion-button size="small">
-        <ion-icon slot="icon-only" name="pause"></ion-icon>
+  <ion-item>
+    <ion-text><small>Post and let the world enjoy it too!</small></ion-text>
+    <ion-buttons slot="end">
+      <ion-button color="danger" (click)="onIgnore()">
+          <ion-icon name="close-circle"></ion-icon>
       </ion-button>
-    <ion-button size="small">
-      <ion-icon slot="icon-only" name="hand"></ion-icon>
-    </ion-button>
-  </ion-buttons>
-</ion-toolbar>
+      <ion-button color="primary" (click)="onPost()">
+        <ion-icon name="send"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-item>
+</div>

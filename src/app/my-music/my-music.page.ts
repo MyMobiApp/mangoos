@@ -7,6 +7,7 @@ import { ToastController, PopoverController } from '@ionic/angular';
 import { MP3SettingsPage } from '../mp3-settings/mp3-settings.page';
 import { ProgressBarComponent } from '../common-components/progress-bar/progress-bar.component';
 
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-my-music',
@@ -28,35 +29,48 @@ export class MyMusicPage {
               private objPlayService: PlayService,
               private toastCtrl: ToastController,
               private popoverCtrl: PopoverController,
+              private sanitizer : DomSanitizer,
               private zone: NgZone) {
+    
+  }
+
+  ngOnInit() {
     let _me_ = this;
 
-    this.objDataService.mp3UploadObservable.subscribe(data => {
+    this.objDataService.uploadEvent().subscribe(data => {
       _me_.percent = Math.round(_me_.objDataService.getmp3UploadProgress());
       _me_.progressBar.progress = _me_.percent;
-      //alert(_me_.percent);
+
+      if(_me_.percent == 0) {
+        _me_.progressBar.bUploading = true;
+      }
+
+      if(_me_.percent > 0) {
+        _me_.progressBar.bStarting = false;
+      }
     });
 
-    this.getMP3Files();
+    this.getMusicFiles();
   }
 
   ionViewDidEnter() {
-    //alert("ionViewWillEnter");
-    this.getMP3Files();
+    
   }
 
   doRefresh(event) {
     //console.log('Begin async operation', event);
 
-    this.getMP3Files();
+    this.getMusicFiles();
     event.target.complete();
   }
 
-  async addToPlaylist(id: string, mp3Data: FileMetaInfo) {
-    this.objPlayService.enqueue(id, mp3Data);
+  async addToPlaylist(id: string, img: any, mp3Data: any) {
+    this.objPlayService.enqueue(id, img, mp3Data);
+
+    let title = mp3Data.hasOwnProperty('metaData') ? mp3Data.metaData.common.title : mp3Data.customName;
 
     let toast = await this.toastCtrl.create({
-      message: mp3Data.customName + ' added to the playlist.',
+      message: title + ' added to the playlist.',
       position: 'top',
       duration: 3000
     });
@@ -64,22 +78,41 @@ export class MyMusicPage {
   }
 
   onSettings(id: string, mp3Data: FileMetaInfo) {
-    alert("Settings Clicked");
+    //alert("Settings Clicked");
     this.popoverData = {'id': id, 'mp3Data': mp3Data};
     //this.objPlayService.enqueue(id, mp3Data);
   }
 
-  async getMP3Files() {
+  imgSrc(format, base64data) {
+    return this.sanitizer.bypassSecurityTrustUrl('data:'+format+';base64,' + base64data);
+  }
+
+  async getMusicFiles() {
     let _me_ = this;
     let handle = this.objDataService.getProfileData().handle;
 
     _me_.bLoading = true;
-    await this.objFirestoreDBService.getMP3List(handle, 'default').then(data => {
+    await this.objFirestoreDBService.getMusicFileList(handle, 'default').then(data => {
       _me_.mp3List = data;
-      _me_.bLoading = false;
-      //alert(JSON.stringify(data));
+      _me_.mp3List.sort(_me_.compare);
+
+      for(let key in _me_.mp3List) {
+        if(_me_.mp3List[key].data.hasOwnProperty('metaData') && 
+           _me_.mp3List[key].data.metaData.common.hasOwnProperty('picture') && 
+           _me_.mp3List[key].data.metaData.common.picture[0].hasOwnProperty('data')) {
+              let imgBlob = <firebase.firestore.Blob>_me_.mp3List[key].data.metaData.common.picture[0].data;
+            
+              _me_.mp3List[key].thumbnail = _me_.imgSrc(_me_.mp3List[key].data.metaData.common.picture[0].format, imgBlob.toBase64());
+              //console.log(_me_.mp3List[key].thumbnail);
+        }
+        //console.log(_me_.mp3List[key]);
+      }
+      
     }).catch(err => {
-      alert(JSON.stringify(err));
+      alert(err);
+      console.log("Error getMusicFileList : " + err);
+    }).finally(() => {
+      _me_.bLoading = false;
     });
   }
 
@@ -99,23 +132,15 @@ export class MyMusicPage {
     this.popoverCtrl.dismiss();
   }
 
-  /*uploadToStorage( information : any ) : AngularFireUploadTask {
-    let newName = `${new Date().getTime()}.txt`;
-
-    return this.storage.ref('files/{newName}').putString(information);
+  compare(a: any, b: any) {
+    if (a.data.customName < b.data.customName)
+      return -1;
+    if (a.data.customName > b.data.customName)
+      return 1;
+    return 0;
   }
-
-  storeInfoToDatabase(metaInfo) {
-    let toSave = {
-      created:      metaInfo.timeCreated,
-      url:          metaInfo.downloadURLs[0],
-      fullPath:     metaInfo.fullPath,
-      contentType:  metaInfo.contentType
-    }
-
-    
-  }
-
+  
+  /*
   deleteFile(file) {
     let storagePath = file.storagePath;
 

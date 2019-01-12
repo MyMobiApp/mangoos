@@ -14,10 +14,11 @@ import * as firebase from 'firebase';
 })
 export class LoginPage implements OnInit {
   
-  constructor(private objFB: Facebook, 
+  constructor(private objDataService: DataService,
+              private objFirebaseDBService: FirebaseDBService,
+              private objFB: Facebook, 
               private objRouter: Router,
-              private objDataService: DataService,
-              private objFirebaseDBService: FirebaseDBService) { 
+              ) { 
 
               }
 

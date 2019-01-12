@@ -1,16 +1,17 @@
-import { Component, OnInit, Input, NgZone, ChangeDetectorRef, ApplicationRef } from '@angular/core';
-import { Media, MediaObject, MEDIA_STATUS } from '@ionic-native/media/ngx';
+import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { PlayService } from 'src/app/services/play/play.service';
 import { FirebaseStorageService } from 'src/app/services/firebase-storage/firebase-storage.service';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+
+import { Media, MediaObject, MEDIA_STATUS } from '@ionic-native/media/ngx';
+import { BackgroundMode } from '@ionic-native/background-mode/ngx';
 
 @Component({
   selector: 'app-mini-player',
   templateUrl: './mini-player.component.html',
   styleUrls: ['./mini-player.component.scss'],
-  providers: [Media]
+  providers: [Media, BackgroundMode]
 })
 export class MiniPlayerComponent implements OnInit {
 
@@ -28,10 +29,12 @@ export class MiniPlayerComponent implements OnInit {
   
   private mp3File: MediaObject = null;
 
-  constructor(private media: Media,
+  constructor(private playService: PlayService,
+              private media: Media,
               private objRouter: Router,
-              private playService: PlayService,
               private alertCtrl: AlertController,
+              private changeDetector: ChangeDetectorRef,
+              private backgroundMode: BackgroundMode,
               private objFirebaseStorageService: FirebaseStorageService) {
     
   }
@@ -112,7 +115,7 @@ export class MiniPlayerComponent implements OnInit {
         _me_.mp3File = _me_.media.create(mp3URL);
 
         // Virtual duration now capped to 600 sec or 10 mins
-        _me_.nDuration = _me_.mp3File.getDuration() == -1 ? 600 : _me_.mp3File.getDuration();
+        _me_.nDuration = _me_.playService.getCurrentDuration();
     
         // to listen to plugin events:
         _me_.subscribeToPlayEvents(_me_.mp3File);
@@ -216,7 +219,8 @@ export class MiniPlayerComponent implements OnInit {
         else {
           _me_.sTimeSpent = (this.bTimerToggle? '—' : '') + date.toISOString().substr(11, 8);
         }
-        
+
+        //_me_.changeDetector.detectChanges();
       }).catch(error => {
         alert("getCurrentPosition: " + JSON.stringify(error));
         console.log('Error!', error);

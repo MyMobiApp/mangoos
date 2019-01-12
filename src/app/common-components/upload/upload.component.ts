@@ -12,7 +12,7 @@ import { Observable } from 'rxjs';
 import { BackgroundMode } from '@ionic-native/background-mode/ngx'
 import { DataService } from 'src/app/services/data/data.service';
 import { Router } from '@angular/router';
-import { FileMetaInfo, FirebaseDBService } from 'src/app/services/firebase-db/firebase-db.service';
+import { FileMetaInfo, FirebaseDBService, FeedItem } from 'src/app/services/firebase-db/firebase-db.service';
 
 @Component({
   selector: 'app-upload',
@@ -34,10 +34,10 @@ export class UploadComponent implements OnInit {
 
   mp3: string; // base64
 
-  constructor(private db: AngularFirestore, 
+  constructor(private dataService: DataService,
               private objFirebaseDBService: FirebaseDBService,
+              private db: AngularFirestore, 
               private storage: AngularFireStorage, 
-              private dataService: DataService,
               //private alertCtrl: AlertController, 
               //private toastCtrl: ToastController,
               private fileChooser: FileChooser,
@@ -54,6 +54,9 @@ export class UploadComponent implements OnInit {
   /*
   * Function to choose file, can't apply MIME filter also we can't determine
   * which file (MIME type) is selected.
+  * 
+  * [NOT USING THIS FUNCTION, RATHER USING CHOOSER PLUGIN. CHECK newChooseMP3() BELOW]
+  * 
   */
   chooseMP3() {
     let _me_ = this;
@@ -102,7 +105,7 @@ export class UploadComponent implements OnInit {
   async uploadMP3(buffer, name, mimeType) {
     let _me_ = this;
     
-    let userID = `${this.dataService.getProfileData().handle}`;
+    let userID = this.dataService.getProfileData().handle;
     let sAlbum = "default";
     let blob = new Blob([buffer], {type: mimeType});
     let fullPath = `${userID}/`+`${sAlbum}`+`/${new Date().getTime()}-`+name;
@@ -115,28 +118,49 @@ export class UploadComponent implements OnInit {
       customName:   name,
       albumName:    sAlbum,
       fullPath:     fullPath,
-      contentType:  mimeType
+      contentType:  mimeType,
+      metaData: null
     };
 
     _me_.storeInfoToDatabase(toSave).then(docRef =>{
+      let feedItem = {
+        doc_id:         docRef.id,
+        db_path:        docRef.path,
+        message:        "",
+        profile_handle: this.dataService.getProfileData().handle,
+        post_datetime:  (new Date()).toISOString(),
+        likes:          0
+      };      
+      _me_.dataService.setPublicFeedItem(feedItem);
+      
+      // Enable background mode.
       _me_.backgroundMode.enable();
+      
+      // Trigger indicating upload initiated
+      _me_.dataService.setMP3UploadProgress(0);
+      
+      // Start upload, and track upload progress
       _me_.task = _me_.storage.ref(fullPath).put(blob);
-
+      
       _me_.progress = _me_.task.percentageChanges();
       _me_.progress.subscribe(value => {
         _me_.dataService.setMP3UploadProgress(value);
-
         if(value == 100) {
+          // Upload completes: Disable background mode.
           _me_.backgroundMode.disable();
         }
+        //alert(value);
       }, (error) => {
         _me_.objFirebaseDBService.deleteDocWithRef(docRef);
         console.log("Error: " + error);
       });
+    }).catch(error => {
+      alert(error);
+      console.log("Error: " + error);
     });
   }
 
-  storeInfoToDatabase(metaInfo: FileMetaInfo) : Promise<any> {
+  storeInfoToDatabase(metaInfo: FileMetaInfo) : Promise<firebase.firestore.DocumentReference> {
     let userID = `${this.dataService.getProfileData().handle}`;
 
     return this.objFirebaseDBService.saveMyMP3(userID, metaInfo);
@@ -153,7 +177,11 @@ export class UploadComponent implements OnInit {
     (async () => {
       // With ionic 4 calling getFile function from object were not returning promise properly.
       // So used this way. May be in next plugin release this gets fixed, till then this is the solution.
-      const fileInfo: ChooserResult = await (<any>window).chooser.getFile("audio/*");
+      // Supported file formats by music-metadata plugins are,
+      // 'audio/mpeg' | 'audio/apev2' | 'audio/mp4' | 'audio/asf' | 'audio/flac' | 'audio/ogg' | 'audio/aiff' | 'audio/wavpack' | 'audio/riff' | 'audio/musepack'
+      // ----
+      const fileInfo: ChooserResult = await (<any>window).chooser
+      .getFile("audio/mpeg,audio/apev2,audio/mp4,audio/asf,audio/flac,audio/ogg,audio/aiff,audio/wavpack,audio/riff,audio/musepack");
       //alert(fileInfo.uri);
       _me_.objFile.resolveLocalFilesystemUrl(fileInfo.uri).then(fileSysURL => {
         //alert(JSON.stringify(fileSysURL));

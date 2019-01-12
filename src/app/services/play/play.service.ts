@@ -22,14 +22,20 @@ export class PlayService {
     let _me_ = this; 
     this.playlistObservable = Observable.create(observer => {
       _me_.playlistObserver = observer;
+      console.log("In playlistObservable");
+      console.log(observer);
     });
 
     this.playItemObservable = Observable.create(observer => {
       _me_.playItemObserver = observer;
+      console.log("In playItemObservable");
+      console.log(observer);
     });
 
     this.playStopObservable = Observable.create(observer => {
       _me_.playStopObserver = observer;
+      console.log("In playStopObservable");
+      console.log(observer);
     });
 
     // Dummy calls, to initialize respective observers
@@ -48,6 +54,17 @@ export class PlayService {
 
   getCurrentMP3() {
     return this.playlist[this.playIndex].mp3Data.fullPath;
+  }
+
+  getCurrentDuration() {
+    let duration = 600; // Dummy duration, if duration is not available
+
+    if(this.playlist[this.playIndex].mp3Data.hasOwnProperty('metaData')) {
+      duration = this.playlist[this.playIndex].mp3Data.metaData.format.duration;
+      duration = duration ? Math.round(duration) : 600;
+    }
+
+    return duration;
   }
 
   incrementMP3Pointer() {
@@ -72,8 +89,8 @@ export class PlayService {
     }
   }
 
-  enqueue(id: string, mp3Data: FileMetaInfo) {
-    this.playlist.push({'id': id, 'mp3Data': mp3Data});
+  enqueue(id: string, img: any, mp3Data: any) {
+    this.playlist.push({'id': id, 'thumbnail': img, 'mp3Data': mp3Data});
     
     this.playlistObserver.next(true);
   }

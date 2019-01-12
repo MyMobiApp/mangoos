@@ -23,11 +23,17 @@
     </ion-list-header>
     <ion-item *ngFor="let mp3 of mp3List">
       <ion-label>
-        <ion-icon name="musical-notes" slot="start"></ion-icon>
-        {{mp3.data.albumName}} / {{mp3.data.customName}}
+        <ion-icon *ngIf="!mp3.thumbnail" name="musical-notes" slot="start"></ion-icon>
+        <ion-avatar *ngIf="mp3.thumbnail" slot="start">
+            <img [src]="mp3.thumbnail">
+          </ion-avatar>
+        <ion-label *ngIf="mp3.data.metaData">{{mp3.data.metaData.common.album}}</ion-label>
+        <ion-text *ngIf="!mp3.data.metaData">{{mp3.data.albumName}}</ion-text>
+        <p *ngIf="mp3.data.metaData">{{mp3.data.metaData.common.title}}</p> 
+        <p *ngIf="!mp3.data.metaData">{{mp3.data.customName}}</p> 
       </ion-label>
       <ion-buttons slot="end">
-        <ion-button shape="round" color="tertiary" (click)="addToPlaylist(mp3.id, mp3.data);$event.stopPropagation();">
+        <ion-button shape="round" color="tertiary" (click)="addToPlaylist(mp3.id, mp3.thumbnail, mp3.data);$event.stopPropagation();">
           <ion-icon slot="icon-only" name="redo"></ion-icon>
         </ion-button>
         <ion-button shape="round" color="tertiary" (click)="onSettings(mp3.id, mp3.data);presentPopover($event);$event.stopPropagation();">

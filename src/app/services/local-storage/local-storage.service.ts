@@ -15,6 +15,6 @@ export interface IPlaylist {
 export class LocalStorageService {
 
   constructor(private objNativeStorage: NativeStorage) { 
-
+    
   }
 }

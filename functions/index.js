@@ -53,6 +53,7 @@ exports.audioUpload = functions.storage.object().onFinalize((object) => {
     const tempFilePath = path.join(os.tmpdir(), fileName+"."+ext);
     
     var sMetadata;
+    var objMetadata;
 
     return bucket.file(filePath).download({
         destination: tempFilePath,
@@ -61,6 +62,7 @@ exports.audioUpload = functions.storage.object().onFinalize((object) => {
 
         return mm.parseFile(tempFilePath, {native: true});
     }).then(metadata => {
+        objMetadata = metadata;
         sMetadata = util.inspect(metadata, { showHidden: false, depth: null });
         console.log(sMetadata);
         
@@ -70,7 +72,7 @@ exports.audioUpload = functions.storage.object().onFinalize((object) => {
         
     }).then((querySnapshot) => {
         querySnapshot.forEach(doc => {
-            doc.ref.update({'metaData': sMetadata});
+            doc.ref.update({'metaData': objMetadata});
         });
         fs.unlinkSync(tempFilePath);
 

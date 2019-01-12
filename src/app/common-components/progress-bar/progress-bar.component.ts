@@ -1,4 +1,6 @@
-import { Component, OnInit, Input, SimpleChanges, NgZone } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { DataService } from 'src/app/services/data/data.service';
+import { FirebaseDBService } from 'src/app/services/firebase-db/firebase-db.service';
 
 @Component({
   selector: 'app-progress-bar',
@@ -7,20 +9,37 @@ import { Component, OnInit, Input, SimpleChanges, NgZone } from '@angular/core';
 })
 export class ProgressBarComponent implements OnInit {
   @Input() progress: any;
+  feedMsg: string = "";
+  bUploading: boolean = false;
+  bStarting: boolean = true;
 
-  constructor(private zone: NgZone) { }
+  constructor(private dataService: DataService,
+              private firebaseDBService: FirebaseDBService) { }
 
   ngOnInit() {
+    
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    /*if(changes['progress']) {
-      this.progress = changes['progress'];
-    }*/
+  onPost() {
+    let _me_ = this;
+    let feedItem = this.dataService.getPublicFeedItem();
+    feedItem.message = this.feedMsg;
 
-    this.zone.run(() => {
-      //console.log('UI has refreshed');
+    this.firebaseDBService.saveItemToPublicFeed(feedItem).then(docRef => {
+      _me_.bUploading = false;
+      _me_.bStarting  = true;
+      _me_.progress   = 0;
+      _me_.feedMsg    = "";
+
+      this.dataService.setPublicFeedItem(null);
+      console.log("Document to Public Feed written successfully! : " + docRef.id);
     });
+  }
+
+  onIgnore() {
+    this.bUploading = false;
+    this.progress = 0;
+    this.feedMsg = "";
   }
 
 }

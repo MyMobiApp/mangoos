@@ -3,6 +3,8 @@ import { AngularFirestore, AngularFirestoreCollection, DocumentReference } from 
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import * as firebase from 'firebase';
+
 export interface UserProfile {
   handle:       string;
   email:        string;
@@ -13,10 +15,10 @@ export interface UserProfile {
 }
 
 export interface FeedItem {
-  profile_id:     string;
+  profile_handle: string;
   post_datetime:  string;
-  album_url:      string;
-  music_url:      string[];
+  db_path:        string; // location at mp3Collection
+  doc_id:         string; // mp3Collection's document ID
   message:        string;
   likes:          number;
 }
@@ -25,8 +27,10 @@ export interface Network {
   profile_id: string;
 }
 
-export interface Playlist {
-
+export interface PlaylistItem {
+  item_id:        string;
+  item_thumbnail: string;
+  item_metadata:  any;
 }
 
 export interface FileMetaInfo {
@@ -37,6 +41,7 @@ export interface FileMetaInfo {
   albumName:    string;
   fullPath:     string;
   contentType:  string;
+  metaData:     any;
 }
 
 @Injectable({
@@ -47,7 +52,7 @@ export class FirebaseDBService {
   private feeds: Observable<FeedItem[]>;
 
   constructor(private objFirestore: AngularFirestore) { 
-    this.feedItemCollection = objFirestore.collection<FeedItem>('FeedItem');
+    this.feedItemCollection = objFirestore.collection<FeedItem>('publicFeed');
     this.feeds = this.feedItemCollection.snapshotChanges().pipe(
       map(actions => {
         return actions.map(a => {
@@ -155,7 +160,7 @@ export class FirebaseDBService {
     });
   }
 
-  saveMyMP3(handle: string, mp3MetaInfo: FileMetaInfo) : Promise<any> {
+  saveMyMP3(handle: string, mp3MetaInfo: FileMetaInfo) : Promise<firebase.firestore.DocumentReference> {
     const createdAtISO  = mp3MetaInfo.createdAtISO;
     const createdAt     = mp3MetaInfo.createdAt;
     const fileName      = mp3MetaInfo.fileName;
@@ -185,30 +190,53 @@ export class FirebaseDBService {
     });
   }
 
-  /*let ref = this.db.collection('files');
+  saveItemToPublicFeed(feedItem: FeedItem) : Promise<firebase.firestore.DocumentReference> {
+    const db_path         = feedItem.db_path;
+    const doc_id          = feedItem.doc_id;
+    const post_datetime   = feedItem.post_datetime;
+    const profile_handle  = feedItem.profile_handle;
+    const message         = feedItem.message;
+    const likes           = feedItem.likes;
 
-    return ref.snapshotChanges()
-    .map(changes => {
-      return changes.map(c => ({ key: c.payload.key, ...c.payload.val() }));
-    });*/
-  getMP3List(handle: string, album: string) : Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.objFirestore.collection('publicFeed').add({
+        post_datetime,
+        profile_handle,
+        db_path,
+        doc_id,
+        message,
+        likes
+      })
+      .then(docRef => {
+        console.log("Public feed document successfully written!");
+        resolve(docRef);
+      })
+      .catch(function(error) {
+          console.error("Error writing public feed document: ", error);
+          reject(error);
+      });
+    });
+  }
+
+  getMusicFileList(handle: string, album: string) : Promise<any> {
     
     return new Promise((resolve, reject) => { 
       this.objFirestore.collection('mp3Collection').doc(handle).collection(album)
-        .get().subscribe(res => {
+        .snapshotChanges()
+        .subscribe(res => {
           //alert(res.size);
-          if (res.size > 0)
+          if (res.length > 0)
           {
             let dataAry = Array();
-            res.forEach(function(doc) {
-              dataAry.push({'id': doc.id, 'data': doc.data()})
+            res.forEach(function(action) {
+              dataAry.push({'id': action.payload.doc.id, 'data': action.payload.doc.data()})
               //alert(doc.id + " => " + JSON.stringify(doc.data()));
               // doc.data() is never undefined for query doc snapshots
             });
             resolve(dataAry);
           }
           else {
-            reject();
+            reject("You haven't uploaded any music file yet!");
           }
         });
     });

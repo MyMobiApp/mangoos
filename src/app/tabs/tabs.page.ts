@@ -12,20 +12,26 @@ export class TabsPage {
 
   @ViewChild(MiniPlayerComponent) miniPlayer: MiniPlayerComponent;
 
-  constructor(private objDataService: DataService, 
-              private playService: PlayService) {
+  constructor(private objDataService: DataService,
+              public playService: PlayService) {
+    
+  }
+
+  ngOnInit() {
+    let _me_ = this;
+
     this.playService.playItemObservable.subscribe(data => {
-      this.miniPlayer.playViaParent();
+      _me_.miniPlayer.playViaParent();
     });
 
     this.playService.playlistObservable.subscribe(data => {
       let playPos = this.playService.getCurrentPlayIndex();
 
-      this.miniPlayer.setPlayPosViaParent(playPos);
+      _me_.miniPlayer.setPlayPosViaParent(playPos);
     });
 
     this.playService.playStopObservable.subscribe(data => {
-      this.miniPlayer.stopViaParent();
+      _me_.miniPlayer.stopViaParent();
     });
   }
 

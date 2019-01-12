@@ -5,8 +5,14 @@
     <ion-reorder-group disabled="false" (ionItemReorder)="onReorderPlaylist($event)">
       <ion-item *ngFor="let mp3 of playlist; let i = index" (click)="Play(i);" [ngStyle]="{'background-color': nCurrentPlayIndex == i ? 'LawnGreen' : ''}">
         <ion-label>
-          <ion-icon name="musical-notes" slot="start"></ion-icon>
-          {{mp3.mp3Data.albumName}} / {{mp3.mp3Data.customName}}
+            <ion-icon *ngIf="!mp3.thumbnail" name="musical-notes" slot="start"></ion-icon>
+            <ion-avatar *ngIf="mp3.thumbnail" slot="start">
+                <img [src]="mp3.thumbnail">
+              </ion-avatar>
+            <ion-label *ngIf="mp3.mp3Data.metaData">{{mp3.mp3Data.metaData.common.album}}</ion-label>
+            <ion-text *ngIf="!mp3.mp3Data.metaData">{{mp3.mp3Data.albumName}}</ion-text>
+            <p *ngIf="mp3.mp3Data.metaData">{{mp3.mp3Data.metaData.common.title}}</p> 
+            <p *ngIf="!mp3.mp3Data.metaData">{{mp3.mp3Data.customName}}</p> 
         </ion-label>
         <ion-buttons slot="end">
           <ion-button (click)="onRemoveFromPlaylist(mp3);$event.stopPropagation();">

@@ -4,7 +4,6 @@
     padding: 2px;
     text-align: center;
     background-color: #f4f4f4;
-    border: 1px solid #dcdcdc;
     color: #fff;
     border-radius: 10px;
 }
@@ -15,5 +14,18 @@
     overflow: hidden;
     padding: 1px;
     border-radius: 5px;
-    background-color: green;
+    background-color: rgb(13, 233, 13);
+}
+
+.pb-container {
+    background-color: #f4f4f4;
+    border: 1px solid #dcdcdc;
+}
+
+.msg-div {
+    border: 1px solid #412626;
+}
+
+.tool-bar {
+    background-color: LightYellow;
 }

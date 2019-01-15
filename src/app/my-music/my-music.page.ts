@@ -7,8 +7,6 @@ import { ToastController, PopoverController } from '@ionic/angular';
 import { MP3SettingsPage } from '../mp3-settings/mp3-settings.page';
 import { ProgressBarComponent } from '../common-components/progress-bar/progress-bar.component';
 
-import { DomSanitizer } from '@angular/platform-browser';
-
 @Component({
   selector: 'app-my-music',
   templateUrl: 'my-music.page.html',
@@ -29,7 +27,6 @@ export class MyMusicPage {
               private objPlayService: PlayService,
               private toastCtrl: ToastController,
               private popoverCtrl: PopoverController,
-              private sanitizer : DomSanitizer,
               private zone: NgZone) {
     
   }
@@ -83,10 +80,6 @@ export class MyMusicPage {
     //this.objPlayService.enqueue(id, mp3Data);
   }
 
-  imgSrc(format, base64data) {
-    return this.sanitizer.bypassSecurityTrustUrl('data:'+format+';base64,' + base64data);
-  }
-
   async getMusicFiles() {
     let _me_ = this;
     let handle = this.objDataService.getProfileData().handle;
@@ -102,7 +95,7 @@ export class MyMusicPage {
            _me_.mp3List[key].data.metaData.common.picture[0].hasOwnProperty('data')) {
               let imgBlob = <firebase.firestore.Blob>_me_.mp3List[key].data.metaData.common.picture[0].data;
             
-              _me_.mp3List[key].thumbnail = _me_.imgSrc(_me_.mp3List[key].data.metaData.common.picture[0].format, imgBlob.toBase64());
+              _me_.mp3List[key].thumbnail = _me_.objDataService.imgSrc(_me_.mp3List[key].data.metaData.common.picture[0].format, imgBlob.toBase64());
               //console.log(_me_.mp3List[key].thumbnail);
         }
         //console.log(_me_.mp3List[key]);

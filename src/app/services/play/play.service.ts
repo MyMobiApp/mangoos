@@ -22,20 +22,14 @@ export class PlayService {
     let _me_ = this; 
     this.playlistObservable = Observable.create(observer => {
       _me_.playlistObserver = observer;
-      console.log("In playlistObservable");
-      console.log(observer);
     });
 
     this.playItemObservable = Observable.create(observer => {
       _me_.playItemObserver = observer;
-      console.log("In playItemObservable");
-      console.log(observer);
     });
 
     this.playStopObservable = Observable.create(observer => {
       _me_.playStopObserver = observer;
-      console.log("In playStopObservable");
-      console.log(observer);
     });
 
     // Dummy calls, to initialize respective observers

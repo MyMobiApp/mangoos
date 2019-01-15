@@ -10,10 +10,12 @@ import { FirebaseDBService } from './services/firebase-db/firebase-db.service';
 
 import { AngularFireAuth } from 'angularfire2/auth';
 import * as firebase from 'firebase';
+import { Facebook } from '@ionic-native/facebook/ngx';
 
 @Component({
   selector: 'app-root',
-  templateUrl: 'app.component.html'
+  templateUrl: 'app.component.html',
+  providers: [Facebook]
 })
 export class AppComponent {
   // Tutorial: https://youtu.be/srTt7AVof-U
@@ -39,6 +41,7 @@ export class AppComponent {
   ];
   constructor(
     private zone: NgZone,
+    private objFB: Facebook,
     private objRouter: Router,
     private objAFAuth: AngularFireAuth,
     private platform: Platform,
@@ -55,9 +58,11 @@ export class AppComponent {
 
     this.platform.ready().then(() => {
       this.statusBar.styleLightContent();
+      
       this.objAFAuth.auth.onAuthStateChanged(user => {
         if (user) {
-          console.log("User: " + JSON.stringify(user));
+          console.log("User Info:")
+          console.log(user);
 
           _me_.objFirebaseDBService.getUserProfile(user.email).then(data => {
             _me_.objDataService.saveProfileData(data);

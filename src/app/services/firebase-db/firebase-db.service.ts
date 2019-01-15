@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, DocumentReference } from 'angularfire2/firestore';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import * as firebase from 'firebase';
@@ -15,12 +15,19 @@ export interface UserProfile {
 }
 
 export interface FeedItem {
-  profile_handle: string;
-  post_datetime:  string;
-  db_path:        string; // location at mp3Collection
-  doc_id:         string; // mp3Collection's document ID
-  message:        string;
-  likes:          number;
+  profile_handle:   string;
+  full_name:        string;
+  post_datetime:    string;
+  db_path:          string; // location at mp3Collection
+  doc_id:           string; // mp3Collection's document ID
+  message:          string;
+  likes:            number;
+  // 0: Not available for feed / removed later by user
+  // 1: Available for feed
+  // 2: Forced removed from feed from application admin
+  feed_status:      number; 
+  feed_removed_date:    string;
+  feed_removed_reason:  string;
 }
 
 export interface Network {
@@ -41,6 +48,7 @@ export interface FileMetaInfo {
   albumName:    string;
   fullPath:     string;
   contentType:  string;
+  feedID:       string;
   metaData:     any;
 }
 
@@ -52,16 +60,7 @@ export class FirebaseDBService {
   private feeds: Observable<FeedItem[]>;
 
   constructor(private objFirestore: AngularFirestore) { 
-    this.feedItemCollection = objFirestore.collection<FeedItem>('publicFeed');
-    this.feeds = this.feedItemCollection.snapshotChanges().pipe(
-      map(actions => {
-        return actions.map(a => {
-          const data  = a.payload.doc.data();
-          const id    = a.payload.doc.id;
-          return {id, ...data}; 
-        })
-      })
-    );
+    
   }
 
   registerUser(profileData: UserProfile) {
@@ -70,7 +69,19 @@ export class FirebaseDBService {
       if (res.size > 0)
       {
         console.log("Match found.");
+        
+        const first_name  = profileData.first_name;
+        const last_name   = profileData.last_name;
+        const full_name   = profileData.full_name;
+        const picture_url = profileData.picture_url;
+
         res.forEach(function(doc) {
+          doc.ref.update({first_name, last_name, full_name, picture_url}).then(() => {
+            console.log("Profile information is updated with name and image.");
+          }).catch(error => {
+            console.log("Error updating profile data: " + error);
+          });
+
           // doc.data() is never undefined for query doc snapshots
           console.log(doc.id, " => ", doc.data());
         });
@@ -107,7 +118,7 @@ export class FirebaseDBService {
     });
   }
 
-  getUserProfile(email: string) : Promise<any> {
+  getUserProfile(email: string) : Promise<firebase.firestore.DocumentData> {
     
     return new Promise((resolve, reject) => { 
       this.objFirestore.collection('userProfile', ref => ref.where('email', "==", email))
@@ -168,6 +179,7 @@ export class FirebaseDBService {
     const albumName     = mp3MetaInfo.albumName
     const fullPath      = mp3MetaInfo.fullPath;
     const contentType   = mp3MetaInfo.contentType;
+    const fieldID       = mp3MetaInfo.feedID;
     
     return new Promise((resolve, reject) => {
       this.objFirestore.doc(`mp3Collection/${handle}`).collection(albumName).add({
@@ -177,7 +189,8 @@ export class FirebaseDBService {
         customName,
         albumName,
         fullPath,
-        contentType
+        contentType,
+        fieldID
       })
       .then(docRef => {
         console.log("Document successfully written!");
@@ -195,21 +208,37 @@ export class FirebaseDBService {
     const doc_id          = feedItem.doc_id;
     const post_datetime   = feedItem.post_datetime;
     const profile_handle  = feedItem.profile_handle;
+    const full_name       = feedItem.full_name;
     const message         = feedItem.message;
     const likes           = feedItem.likes;
+    const feed_status     = feedItem.feed_status;
 
     return new Promise((resolve, reject) => {
       this.objFirestore.collection('publicFeed').add({
         post_datetime,
         profile_handle,
+        full_name,
         db_path,
         doc_id,
         message,
-        likes
+        likes,
+        feed_status
       })
       .then(docRef => {
         console.log("Public feed document successfully written!");
-        resolve(docRef);
+        
+        // Update respective mp3Collection
+        this.objFirestore.doc(db_path).update({feedID: docRef.id}).then(() => {
+          
+          console.error("feedID in mp3Collection updated successfully.");
+          resolve(docRef);
+
+        }).catch(error => {
+          
+          console.error("Error updating feedID in mp3Collection: ", error);
+          reject(error);
+
+        });
       })
       .catch(function(error) {
           console.error("Error writing public feed document: ", error);
@@ -229,7 +258,7 @@ export class FirebaseDBService {
           {
             let dataAry = Array();
             res.forEach(function(action) {
-              dataAry.push({'id': action.payload.doc.id, 'data': action.payload.doc.data()})
+              dataAry.push({'id': action.payload.doc.id, 'data': action.payload.doc.data()});
               //alert(doc.id + " => " + JSON.stringify(doc.data()));
               // doc.data() is never undefined for query doc snapshots
             });
@@ -237,6 +266,80 @@ export class FirebaseDBService {
           }
           else {
             reject("You haven't uploaded any music file yet!");
+          }
+        });
+    });
+  }
+
+  getMusicMetadata(path: string) : Promise<FileMetaInfo> {
+    
+    return new Promise((resolve, reject) => { 
+      this.objFirestore.doc(path).snapshotChanges()
+        .subscribe(docSnapshot => {
+          //console.log(docSnapshot);
+          if (docSnapshot)
+          {
+            resolve(<FileMetaInfo>docSnapshot.payload.data());
+          }
+          else {
+            reject("You haven't uploaded any music file yet!");
+          }
+        });
+    });
+  }
+
+  getPublicFeedItem() : Observable<FeedItem[]> {
+    this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed');
+    this.feeds = this.feedItemCollection.snapshotChanges().pipe(
+      map(actions => {
+        return actions.map(a => {
+          const data  = a.payload.doc.data();
+          const id    = a.payload.doc.id;
+          return {id, ...data}; 
+        });
+      })
+    );
+
+    return this.feeds;
+  }
+
+  getPublicFeedItemWithOffset(offset: string, limit: number) : Observable<FeedItem[]> {
+    this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed', ref => ref
+                                  .orderBy('post_datetime')
+                                  .startAfter(offset)
+                                  .limit(limit));
+
+    this.feeds = this.feedItemCollection.snapshotChanges().pipe(
+      map(actions => {
+        return actions.map(a => {
+          const data  = a.payload.doc.data();
+          const id    = a.payload.doc.id;
+          return {id, ...data}; 
+        });
+      })
+    );
+
+    return this.feeds;
+  }
+
+  getProfileImageURL(handle: string) : Promise<string> {
+
+    return new Promise((resolve, reject) => { 
+      this.objFirestore.collection('userProfile', ref => ref.where('handle', "==", handle))
+        .get().subscribe(res => {
+          if (res.size > 0)
+          {
+            //console.log("Profile found with handle : " + handle);
+
+            res.forEach(function(doc) {
+              resolve(doc.data().picture_url);
+
+              // doc.data() is never undefined for query doc snapshots
+              //console.log("Profile picture URL : ", doc.data().picture_url);
+            });
+          }
+          else {
+            reject("Can't find user profile with handle : " + handle);
           }
         });
     });

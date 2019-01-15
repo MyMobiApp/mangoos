@@ -119,17 +119,22 @@ export class UploadComponent implements OnInit {
       albumName:    sAlbum,
       fullPath:     fullPath,
       contentType:  mimeType,
-      metaData: null
+      feedID:       null,
+      metaData:     null
     };
 
     _me_.storeInfoToDatabase(toSave).then(docRef =>{
       let feedItem = {
-        doc_id:         docRef.id,
-        db_path:        docRef.path,
-        message:        "",
-        profile_handle: this.dataService.getProfileData().handle,
-        post_datetime:  (new Date()).toISOString(),
-        likes:          0
+        doc_id:           docRef.id,
+        db_path:          docRef.path,
+        message:          "",
+        profile_handle:   this.dataService.getProfileData().handle,
+        full_name:        this.dataService.getProfileData().full_name,
+        post_datetime:    (new Date()).toISOString(),
+        likes:            0,
+        feed_status:      1,
+        feed_removed_date:    null,
+        feed_removed_reason:  null
       };      
       _me_.dataService.setPublicFeedItem(feedItem);
       

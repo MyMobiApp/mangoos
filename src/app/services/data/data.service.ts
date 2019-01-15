@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { FirebaseDBService, UserProfile, FeedItem } from '../firebase-db/firebase-db.service';
 import { Observable } from 'rxjs';
 
+import { DomSanitizer } from '@angular/platform-browser';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -9,11 +11,10 @@ export class DataService {
   private profileData: any;
   private feedItem: FeedItem = null;
   private mp3UploadProgress: number = 0;
-  private  mp3UploadObservable: Observable<number>;
+  private mp3UploadObservable: Observable<number>;
   private mp3UploadObserver: any;
 
-  private fireDBService: FirebaseDBService;
-  constructor() {
+  constructor(private fireDBService: FirebaseDBService, private sanitizer: DomSanitizer) {
     let _me_ = this;
 
     this.mp3UploadObservable = Observable.create(observer => {
@@ -77,5 +78,9 @@ export class DataService {
 
   public updateProfileData(pd: any) {
     this.profileData = Object.assign({}, pd);
+  }
+
+  public imgSrc(format, base64data) {
+    return this.sanitizer.bypassSecurityTrustUrl('data:'+format+';base64,' + base64data);
   }
 }

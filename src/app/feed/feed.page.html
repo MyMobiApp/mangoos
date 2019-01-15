@@ -1,6 +1,12 @@
 <app-header sTitle="MGooS"></app-header>
 
 <ion-content padding>
-    <app-feed-audio-item></app-feed-audio-item>
-    <app-feed-audio-item></app-feed-audio-item>
+    <app-feed-audio-item *ngFor="let feedItem of feedItemAry" [feedItem]="feedItem"></app-feed-audio-item>
+
+    <ion-infinite-scroll threshold="100px" (ionInfinite)="fetchFeedItems($event)">
+        <ion-infinite-scroll-content
+            loadingSpinner="bubbles"
+            loadingText="Loading ...">
+        </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
 </ion-content>

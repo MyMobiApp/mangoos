@@ -2,33 +2,32 @@
     
   <ion-item>
     <ion-avatar item-start>
-      <img src="https://media.licdn.com/dms/image/C5103AQGHFDLBrITBog/profile-displayphoto-shrink_100_100/0?e=1548892800&v=beta&t=HXsGUOvGFlA2EubCzCLLOWRFVjDvAQt1vSQ-jQibCgA">
+      <img *ngIf="feed_profile_img_url" src="{{feed_profile_img_url}}"/>
+      <img *ngIf="!feed_profile_img_url" src="assets/profile_avatar.png"/>
     </ion-avatar>
     <ion-card-header>
-        <ion-card-title>Manish Arora</ion-card-title>
-        <ion-card-subtitle>Nov 30, 2018</ion-card-subtitle>
-        <ion-card-subtitle>Man kyu behka...</ion-card-subtitle>
-      </ion-card-header>
+      <ion-card-title>{{feedItem.full_name}}</ion-card-title>
+      <ion-card-subtitle>{{feedItem.post_datetime}}</ion-card-subtitle>
+      <ion-card-subtitle>{{music_album}}</ion-card-subtitle>
+      <ion-card-subtitle>{{music_title}}</ion-card-subtitle>
+    </ion-card-header>
   </ion-item>
 
-  <app-mini-player></app-mini-player>
-
   <ion-card-content>
-    Keep close to Nature's heart... and break clear away, once in awhile,
-    and climb a mountain or spend a week in the woods. Wash your spirit clean.
+    {{feedItem.message}}
   </ion-card-content>
 
   <ion-row>
     <ion-col>
       <button ion-button icon-start clear small>
         <ion-icon name="thumbs-up"></ion-icon>
-        <div>12 Likes</div>
+        <div>{{feedItem.likes}}</div>
       </button>
     </ion-col>
     <ion-col center text-center>
-      <ion-note>
-        11h ago
-      </ion-note>
+      <ion-button size="small" (click)="onAddToPlaylist()">
+        Add to Playlist <ion-icon name="add-circle"></ion-icon>
+      </ion-button>
     </ion-col>
   </ion-row>
 </ion-card>

@@ -94,7 +94,6 @@
   "description": "An Ionic project",
   "cordova": {
     "plugins": {
-      "cordova-plugin-whitelist": {},
       "cordova-plugin-statusbar": {},
       "cordova-plugin-device": {},
       "cordova-plugin-splashscreen": {},
@@ -117,7 +116,8 @@
       "cordova-plugin-media": {},
       "cordova-plugin-local-notification": {},
       "cordova-plugin-nativestorage": {},
-      "cordova-plugin-chooser": {}
+      "cordova-plugin-chooser": {},
+      "cordova-plugin-whitelist": {}
     },
     "platforms": [
       "android",

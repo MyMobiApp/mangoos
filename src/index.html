@@ -5,7 +5,10 @@
     <title>Ionic App</title>
 
     <base href="/" />
-
+    <meta 
+      http-equiv="Content-Security-Policy" 
+      content="default-src *; img-src * data: 'unsafe-inline'; style-src 'self' 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'; font-src * data: 'unsafe-inline';"
+    />
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"

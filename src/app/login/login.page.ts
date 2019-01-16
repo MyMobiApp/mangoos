@@ -39,7 +39,7 @@ export class LoginPage implements OnInit {
   onLogin() {
     var _me_ = this;
 
-    this.objFB.login(['public_profile', 'user_friends', 'email'])
+    this.objFB.login(['public_profile', 'email'])
         .then((res: FacebookLoginResponse) => {
           this.objFB.api('me?fields=id,name,email,first_name,last_name,picture.width(720).height(720).as(picture_large)', [])
             .then(profile => {
@@ -53,7 +53,7 @@ export class LoginPage implements OnInit {
               const facebookCredential = firebase.auth.FacebookAuthProvider
               .credential(res.authResponse.accessToken);
 
-              firebase.auth().signInWithCredential(facebookCredential)
+              firebase.auth().signInAndRetrieveDataWithCredential(facebookCredential)
               .then( success => { 
                 console.log("Firebase success: " + JSON.stringify(success)); 
               });

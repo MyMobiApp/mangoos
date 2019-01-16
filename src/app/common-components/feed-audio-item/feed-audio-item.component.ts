@@ -3,6 +3,7 @@ import { FeedItem, FirebaseDBService, FileMetaInfo } from 'src/app/services/fire
 import { PlayService } from 'src/app/services/play/play.service';
 import { ProfileService } from 'src/app/services/profile-service/profile-service.service';
 import { DataService } from 'src/app/services/data/data.service';
+import { ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-feed-audio-item',
@@ -18,7 +19,8 @@ export class FeedAudioItemComponent implements OnInit {
   music_thumbnail: string = null;
   music_metadata: FileMetaInfo;
 
-  constructor(private profileService: ProfileService,
+  constructor(private toastCtrl: ToastController,
+              private profileService: ProfileService,
               private playService: PlayService,
               private dataService: DataService,
               private firebaseDBService: FirebaseDBService) { }
@@ -62,8 +64,17 @@ export class FeedAudioItemComponent implements OnInit {
         });
   }
 
-  onAddToPlaylist() {
+  async onAddToPlaylist() {
     this.playService.enqueue(this.feedItem.doc_id, this.music_thumbnail, this.music_metadata);
+
+    let title = this.music_metadata.hasOwnProperty('metaData') ? this.music_metadata.metaData.common.title : this.music_metadata.customName;
+
+    let toast = await this.toastCtrl.create({
+      message: title + ' added to the playlist.',
+      position: 'top',
+      duration: 3000
+    });
+    toast.present();
   }
 
 }

@@ -18,6 +18,7 @@ export interface FeedItem {
   profile_handle:   string;
   full_name:        string;
   post_datetime:    string;
+  post_dateobj:     number;
   db_path:          string; // location at mp3Collection
   doc_id:           string; // mp3Collection's document ID
   message:          string;
@@ -206,6 +207,7 @@ export class FirebaseDBService {
   saveItemToPublicFeed(feedItem: FeedItem) : Promise<firebase.firestore.DocumentReference> {
     const db_path         = feedItem.db_path;
     const doc_id          = feedItem.doc_id;
+    const post_dateobj   = feedItem.post_dateobj;
     const post_datetime   = feedItem.post_datetime;
     const profile_handle  = feedItem.profile_handle;
     const full_name       = feedItem.full_name;
@@ -215,6 +217,7 @@ export class FirebaseDBService {
 
     return new Promise((resolve, reject) => {
       this.objFirestore.collection('publicFeed').add({
+        post_dateobj,
         post_datetime,
         profile_handle,
         full_name,
@@ -303,11 +306,18 @@ export class FirebaseDBService {
     return this.feeds;
   }
 
-  getPublicFeedItemWithOffset(offset: string, limit: number) : Observable<FeedItem[]> {
-    this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed', ref => ref
-                                  .orderBy('post_datetime')
+  getPublicFeedItemWithOffset(offset: number, limit: number) : Observable<FeedItem[]> {
+    if(offset) {
+      this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed', ref => ref
+                                  .orderBy('post_dateobj', 'desc')
                                   .startAfter(offset)
                                   .limit(limit));
+    }
+    else {
+      this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed', ref => ref
+                                  .orderBy('post_dateobj', 'desc')
+                                  .limit(limit));
+    }
 
     this.feeds = this.feedItemCollection.snapshotChanges().pipe(
       map(actions => {

@@ -3,7 +3,7 @@
     <name>MGooS</name>
     <description>A Social Musical App</description>
     <author email="manish.mastishka@gmail.com" href="http://mgoos.com/">MGooS Team</author>
-    <content original-src="index.html" src="https://192.168.1.3:8100" />
+    <content original-src="index.html" src="https://192.168.43.190:8100" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -107,7 +107,7 @@
     <plugin name="cordova-plugin-nativestorage" spec="~2.3.2" />
     <plugin name="cordova-plugin-chooser" spec="~1.2.4" />
     <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
-    <allow-navigation href="https://192.168.1.3:8100" sessionid="4a883d5f" />
+    <allow-navigation href="https://192.168.43.190:8100" sessionid="21b69e82" />
     <engine name="android" spec="^7.1.4" />
     <engine name="browser" spec="~5.0.4" />
 </widget>

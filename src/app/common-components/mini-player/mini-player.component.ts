@@ -1,21 +1,28 @@
-import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
-import { PlayService } from 'src/app/services/play/play.service';
-import { FirebaseStorageService } from 'src/app/services/firebase-storage/firebase-storage.service';
+import { Component, OnInit, Input, NgZone } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { Router } from '@angular/router';
 
+import { PlayService } from 'src/app/services/play/play.service';
+import { FirebaseStorageService } from 'src/app/services/firebase-storage/firebase-storage.service';
+
 import { Media, MediaObject, MEDIA_STATUS } from '@ionic-native/media/ngx';
 import { BackgroundMode } from '@ionic-native/background-mode/ngx';
+import { LocalNotifications } from '@ionic-native/local-notifications/ngx';
+import { FileMetaInfo } from 'src/app/services/firebase-db/firebase-db.service';
+import { DataService } from 'src/app/services/data/data.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-mini-player',
   templateUrl: './mini-player.component.html',
   styleUrls: ['./mini-player.component.scss'],
-  providers: [Media, BackgroundMode]
+  providers: [Media, BackgroundMode, LocalNotifications]
 })
 export class MiniPlayerComponent implements OnInit {
 
   @Input() sColor: string = "light";
+
+  private playLocalNotificationID = 99999;
 
   private mediaStatus: MEDIA_STATUS = MEDIA_STATUS.NONE;
   private bTimerToggle: boolean = false;
@@ -29,11 +36,14 @@ export class MiniPlayerComponent implements OnInit {
   
   private mp3File: MediaObject = null;
 
-  constructor(private playService: PlayService,
+  constructor(private dataService: DataService,
+              private playService: PlayService,
               private media: Media,
               private objRouter: Router,
               private alertCtrl: AlertController,
-              private changeDetector: ChangeDetectorRef,
+              private localNotification: LocalNotifications,
+              private zone: NgZone, 
+              //private changeDetector: ChangeDetectorRef,
               private backgroundMode: BackgroundMode,
               private objFirebaseStorageService: FirebaseStorageService) {
     
@@ -80,12 +90,10 @@ export class MiniPlayerComponent implements OnInit {
   }
 
   stopViaParent() {
-    this.bUserStopped = true;
+    //alert("stopViaParent : " + this.bPlaying);
     
     if(this.bPlaying && this.mp3File) {
-      this.mp3File.stop();
-      this.mp3File = null;
-      this.bPlaying = false;
+      this.onStop()
     }
   }
 
@@ -137,9 +145,14 @@ export class MiniPlayerComponent implements OnInit {
   }
 
   onStop() {
+    this.localNotification.cancel(this.playLocalNotificationID);
+
     this.bUserStopped = true;
+    this.bPlaying = false;
     this.mp3File.stop();
     this.mp3File = null;
+    this.nTimeSpent = 0;
+    this.sTimeSpent = "00:00";
   }
 
   seetTo(index: number) {
@@ -151,6 +164,10 @@ export class MiniPlayerComponent implements OnInit {
   async subscribeToPlayEvents(mp3File) {
     let _me_ = this;
 
+    window.addEventListener('beforeunload', () => {
+      _me_.localNotification.cancel(_me_.playLocalNotificationID);
+    });
+
     await mp3File.onStatusUpdate.subscribe(status => {
       _me_.mediaStatus = status;
       
@@ -160,10 +177,42 @@ export class MiniPlayerComponent implements OnInit {
           
           break;
         }
+        case MEDIA_STATUS.RUNNING: {
+          _me_.bPlaying = true;
+          // Enable background mode
+          _me_.backgroundMode.enable();
+
+          let mp3Data: FileMetaInfo = _me_.playService.getCurrentMP3Data();
+          let thumbnail = null;
+
+          if( mp3Data.hasOwnProperty('metaData') && 
+              mp3Data.metaData.common.hasOwnProperty('picture') && 
+              mp3Data.metaData.common.picture[0].hasOwnProperty('data')) {
+            let imgBlob = <firebase.firestore.Blob>mp3Data.metaData.common.picture[0].data;
+
+            thumbnail = _me_.dataService.imgSrc(mp3Data.metaData.common.picture[0].format, imgBlob.toBase64());
+          }
+
+          _me_.localNotification.cancel(_me_.playLocalNotificationID);
+          _me_.localNotification.schedule({
+            id: _me_.playLocalNotificationID,
+            title: (mp3Data.hasOwnProperty('metaData') && mp3Data.metaData.common.title) ? mp3Data.metaData.common.title : mp3Data.customName,
+            text: `Playing music from album '${(mp3Data.hasOwnProperty('metaData') && mp3Data.metaData.common.album) ? mp3Data.metaData.common.album : mp3Data.albumName}'`,
+            smallIcon: 'res://play',
+            sticky: true
+          });
+        }
         case MEDIA_STATUS.PAUSED: {
           break;
         }
         case MEDIA_STATUS.STOPPED: {
+          _me_.bPlaying = false;
+          // Clear play notification.
+          _me_.localNotification.cancel(_me_.playLocalNotificationID);
+
+          // Disable background mode
+          _me_.backgroundMode.disable();
+
           //console.log("In onStatusUpdate Stopped, play pos: " + _me_.playPos);
           clearInterval(_me_.timerToken);
           
@@ -202,23 +251,25 @@ export class MiniPlayerComponent implements OnInit {
 
         let timeSpent: number = Math.round(value);
         
-        _me_.nTimeSpent = timeSpent;
+        _me_.zone.run(() => {
+          _me_.nTimeSpent = timeSpent;
 
-        //console.log("Status : " + _me_.mediaStatus);
-        //console.log("Duration : " + _me_.nDuration);
-        if(_me_.bTimerToggle) {
-          date.setSeconds(_me_.nDuration - timeSpent);
-        }
-        else {
-          date.setSeconds(timeSpent);
-        }
-        
-        if(_me_.nDuration < 3600) {
-          _me_.sTimeSpent = (this.bTimerToggle? '—' : '') + date.toISOString().substr(14, 5);
-        }
-        else {
-          _me_.sTimeSpent = (this.bTimerToggle? '—' : '') + date.toISOString().substr(11, 8);
-        }
+          //console.log("Status : " + _me_.mediaStatus);
+          //console.log("Duration : " + _me_.nDuration);
+          if(_me_.bTimerToggle) {
+            date.setSeconds(_me_.nDuration - timeSpent);
+          }
+          else {
+            date.setSeconds(timeSpent);
+          }
+          
+          if(_me_.nDuration < 3600) {
+            _me_.sTimeSpent = (this.bTimerToggle? '—' : '') + date.toISOString().substr(14, 5);
+          }
+          else {
+            _me_.sTimeSpent = (this.bTimerToggle? '—' : '') + date.toISOString().substr(11, 8);
+          }
+        });
 
         //_me_.changeDetector.detectChanges();
       }).catch(error => {

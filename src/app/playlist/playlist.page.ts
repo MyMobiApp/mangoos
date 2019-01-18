@@ -56,7 +56,7 @@ export class PlaylistPage {
   async onRemoveFromPlaylist(mp3Obj) {
     let alert = await this.alertCtrl.create({
       header: 'Confirm Delete',
-      message: 'Do you want to remove "'+ mp3Obj.mp3Data.customName + '" mp3 from playlist?',
+      message: `Do you want to remove "${(mp3Obj.mp3Data.hasOwnProperty('metaData') && mp3Obj.mp3Data.metaData.common.title) ? mp3Obj.mp3Data.metaData.common.title : mp3Obj.mp3Data.customName}" from playlist?`,
       buttons: [
         {
           text: 'Cancel',

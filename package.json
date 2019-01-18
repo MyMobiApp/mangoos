@@ -29,7 +29,7 @@
     "@ionic-native/file-path": "^5.0.0-beta.22",
     "@ionic-native/file-transfer": "^5.0.0-beta.22",
     "@ionic-native/firebase": "^5.0.0-beta.22",
-    "@ionic-native/local-notifications": "^5.0.0-beta.22",
+    "@ionic-native/local-notifications": "^5.0.0-beta.23",
     "@ionic-native/media": "^5.0.0-beta.22",
     "@ionic-native/native-storage": "^5.0.0-beta.22",
     "@ionic-native/network": "^5.0.0-beta.22",

@@ -5,26 +5,40 @@
       <img *ngIf="feed_profile_img_url" src="{{feed_profile_img_url}}"/>
       <img *ngIf="!feed_profile_img_url" src="assets/profile_avatar.png"/>
     </ion-avatar>
-    <ion-card-header>
+    <ion-card-header *ngIf="feedItem">
       <ion-card-title>{{feedItem.full_name}}</ion-card-title>
       <ion-card-subtitle>{{feedItem.post_datetime}}</ion-card-subtitle>
-      <ion-card-subtitle>{{music_album}}</ion-card-subtitle>
-      <ion-card-subtitle>{{music_title}}</ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-header *ngIf="!feedItem">
+      <ion-card-title>
+        <ion-spinner name="lines-small"></ion-spinner>
+      </ion-card-title>
     </ion-card-header>
   </ion-item>
 
   <ion-card-content>
-    {{feedItem.message}}
+    <ion-item *ngIf="feedItem.message">{{feedItem.message}}</ion-item>
+    <ion-item lines="none" *ngIf="music_album">
+      <ion-badge color="tertiary" slot="start">Album</ion-badge>
+      <ion-label>{{music_album}}</ion-label>
+    </ion-item>
+    <ion-item *ngIf="music_title">
+      <ion-badge color="tertiary" slot="start">Title</ion-badge>
+      <ion-label>{{music_title}}</ion-label>
+    </ion-item>
+    <ion-text *ngIf="!music_metadata">
+        <ion-spinner name="lines-small"></ion-spinner>
+    </ion-text>
   </ion-card-content>
 
   <ion-row>
     <ion-col>
-      <button ion-button icon-start clear small>
-        <ion-icon name="thumbs-up"></ion-icon>
+      <ion-button slot="start" small color="primary">
+        <ion-icon slot="icon-only" name="thumbs-up"></ion-icon>
         <div>{{feedItem.likes}}</div>
-      </button>
+      </ion-button>
     </ion-col>
-    <ion-col center text-center>
+    <ion-col center text-center *ngIf="music_metadata">
       <ion-button size="small" (click)="onAddToPlaylist()">
         Add to Playlist <ion-icon name="add-circle"></ion-icon>
       </ion-button>

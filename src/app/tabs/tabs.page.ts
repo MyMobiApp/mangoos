@@ -31,6 +31,7 @@ export class TabsPage {
     });
 
     this.playService.playStopObservable.subscribe(data => {
+      //alert("Test playStopObservable");
       _me_.miniPlayer.stopViaParent();
     });
   }

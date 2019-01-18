@@ -50,6 +50,10 @@ export class PlayService {
     return this.playlist[this.playIndex].mp3Data.fullPath;
   }
 
+  getCurrentMP3Data() : FileMetaInfo {
+    return this.playlist[this.playIndex].mp3Data;
+  }
+
   getCurrentDuration() {
     let duration = 600; // Dummy duration, if duration is not available
 

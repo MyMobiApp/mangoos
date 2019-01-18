@@ -26,7 +26,7 @@ export class FeedAudioItemComponent implements OnInit {
               private firebaseDBService: FirebaseDBService) { }
 
   ngOnInit() {
-    let date = new Date(this.feedItem.post_datetime);
+    let date = new Date(this.feedItem.post_dateobj);
     var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     
     this.feedItem.post_datetime = date.toLocaleString("en-US", options);

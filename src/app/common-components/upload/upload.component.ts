@@ -131,6 +131,7 @@ export class UploadComponent implements OnInit {
         profile_handle:   this.dataService.getProfileData().handle,
         full_name:        this.dataService.getProfileData().full_name,
         post_datetime:    (new Date()).toISOString(),
+        post_dateobj:     Date.now(),
         likes:            0,
         feed_status:      1,
         feed_removed_date:    null,

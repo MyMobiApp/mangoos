@@ -14,7 +14,7 @@ export class FeedPage {
  
   private feedItemAry: FeedItem[];
   offset: number  = null;
-  limit: number   = 5;
+  limit: number   = 20;
 
   constructor(private dataService: DataService,
               private firebaseDBService: FirebaseDBService) { }
@@ -44,7 +44,7 @@ export class FeedPage {
       //console.log(_me_.feedItemAry);
       if(event) {
         event.target.complete();
-        if(feedItemAry.length < _me_.limit) {
+        if(feedItemAry.length == 0) {
           event.target.disabled = true;
         }
       }

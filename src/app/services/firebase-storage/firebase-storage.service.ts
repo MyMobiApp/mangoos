@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { FirebaseStorage } from 'angularfire2';
-import { UserProfile } from '../firebase-db/firebase-db.service';
 import { AngularFireStorage } from 'angularfire2/storage';
+import { Observable } from 'rxjs';
+
+import { UserProfile } from '../firebase-db/firebase-db.service';
 
 @Injectable({
   providedIn: 'root'
@@ -26,5 +27,9 @@ export class FirebaseStorageService {
           }
       });
     });
+  }
+
+  deleteFile(file_path: string) : Observable <any>{
+    return this.objFirebaseStorage.ref(file_path).delete();
   }
 }

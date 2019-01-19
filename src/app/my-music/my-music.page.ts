@@ -16,6 +16,9 @@ export class MyMusicPage {
   // Tutorial
   // https://www.youtube.com/watch?v=Pi6AtssyaNw
 
+  offset: string = null;
+  limit: number = 20;
+
   percent: any = 0;
   mp3List: any = null;
   bLoading: boolean = false;
@@ -46,16 +49,17 @@ export class MyMusicPage {
         _me_.progressBar.bStarting = false;
       }
     });
-
-    this.getMusicFiles();
   }
 
   ionViewDidEnter() {
-    
+    console.log('ionViewDidEnter get music files.');
+    this.getMusicFiles();
   }
 
   doRefresh(event) {
-    //console.log('Begin async operation', event);
+    console.log('Begin async Refresh operation', event);
+    this.offset = null;
+    this.mp3List = null;
 
     this.getMusicFiles();
     event.target.complete();
@@ -80,7 +84,51 @@ export class MyMusicPage {
     //this.objPlayService.enqueue(id, mp3Data);
   }
 
-  async getMusicFiles() {
+  async getMusicFiles(event?: any) {
+    let _me_ = this;
+    const handle = this.objDataService.getProfileData().handle;
+    
+    _me_.bLoading = true;
+    await this.objFirestoreDBService.getMusicMetaInfoList(handle, 'default', _me_.offset, _me_.limit)
+    .subscribe(list => {
+      if(list.length > 0) {
+        _me_.offset = list[list.length - 1].createdAt;
+        _me_.mp3List = _me_.mp3List ? _me_.mp3List.concat(list) : list;
+        //_me_.mp3List.sort(_me_.compare);
+        console.log(list);
+        console.log(_me_.mp3List);
+
+        for(let key in list) {
+          if(list[key].hasOwnProperty('metaData') && 
+            list[key].metaData.common.hasOwnProperty('picture') && 
+            list[key].metaData.common.picture[0].hasOwnProperty('data')) {
+              let imgBlob = <firebase.firestore.Blob>list[key].metaData.common.picture[0].data;
+            
+              _me_.mp3List[key].thumbnail = _me_.objDataService.imgSrc(list[key].metaData.common.picture[0].format, imgBlob.toBase64());
+                //console.log(_me_.mp3List[key].thumbnail);
+          }
+          let date = new Date(_me_.mp3List[key].createdAtISO);
+          _me_.mp3List[key].createdAtISO = date.toISOString();
+          //console.log(_me_.mp3List[key]);
+        }
+      }
+      
+      if(event) {
+        event.target.complete();
+        if(list.length == 0) {
+          event.target.disabled = true;
+        }
+      }
+
+      _me_.bLoading = false;
+    }, err => {
+      _me_.bLoading = false;
+      alert(err);
+      console.log("Error getMusicFileList : " + err);
+    });
+  }
+
+  async getMusicFiles_old() {
     let _me_ = this;
     let handle = this.objDataService.getProfileData().handle;
 
@@ -114,7 +162,7 @@ export class MyMusicPage {
 
     const popover = await this.popoverCtrl.create({
       component: MP3SettingsPage,
-      componentProps: _me_.popoverData,
+      componentProps: {'metaInfo' : _me_.popoverData, 'popoverObj' : this.popoverCtrl},
       event: ev,
       translucent: true
     });
@@ -126,17 +174,14 @@ export class MyMusicPage {
   }
 
   compare(a: any, b: any) {
-    if (a.data.customName < b.data.customName)
+    if (a.customName < b.customName)
       return -1;
-    if (a.data.customName > b.data.customName)
+    if (a.customName > b.customName)
       return 1;
     return 0;
   }
   
-  /*
-  deleteFile(file) {
-    let storagePath = file.storagePath;
-
-    this.storage.ref(storagePath).delete();
-  }*/
+  fetchFeedItems(event) {
+    this.getMusicFiles(event);
+  }
 }

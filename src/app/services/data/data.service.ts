@@ -57,14 +57,14 @@ export class DataService {
     return this.profileData;
   }
 
-  public setProfileData(pd: any) {
+  public saveProfileData(pd: any) {
     this.profileData = Object.assign({}, pd);
     
     console.log("Set ProfileData: " + JSON.stringify(this.profileData));
     this.fireDBService.registerUser(pd);
   }
 
-  public saveProfileData(pd: any) {
+  public setProfileData(pd: any) {
     this.profileData = Object.assign({}, pd);
     
     console.log("Saved ProfileData: " + JSON.stringify(this.profileData));

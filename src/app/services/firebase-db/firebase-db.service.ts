@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, DocumentReference } from 'angularfire2/firestore';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, take } from 'rxjs/operators';
 
 import * as firebase from 'firebase';
+
+import { FirebaseStorageService } from '../firebase-storage/firebase-storage.service';
 
 export interface UserProfile {
   handle:       string;
@@ -60,7 +62,8 @@ export class FirebaseDBService {
   private feedItemCollection: AngularFirestoreCollection<FeedItem>;
   private feeds: Observable<FeedItem[]>;
 
-  constructor(private objFirestore: AngularFirestore) { 
+  constructor(private objFirestore: AngularFirestore,
+              private objFirebaseStorageService: FirebaseStorageService) { 
     
   }
 
@@ -250,6 +253,37 @@ export class FirebaseDBService {
     });
   }
 
+  getMusicMetaInfoList(handle: string, album: string, offset: string, limit: number) : Observable<FileMetaInfo[]> {
+    
+    let mp3Collection: AngularFirestoreCollection<FileMetaInfo>;
+    if(offset) {
+      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+        .doc(handle).collection(album, ref => ref
+        .orderBy('createdAt', 'desc')
+        .startAfter(offset)
+        .limit(limit));
+    }
+    else {
+      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+        .doc(handle).collection(album, ref => ref
+        .orderBy('createdAt', 'desc')
+        .limit(limit));
+    }
+    
+    let list = mp3Collection.snapshotChanges().pipe(take(1),
+        map(actions => {
+        //alert("Test - 5 : " + actions.length);
+        return actions.map(a => {
+          const data  = a.payload.doc.data();
+          const id    = a.payload.doc.id;
+          return {id, ...data}; 
+        });
+      })
+    );
+
+    return list;
+  }
+
   getMusicFileList(handle: string, album: string) : Promise<any> {
     
     return new Promise((resolve, reject) => { 
@@ -293,7 +327,7 @@ export class FirebaseDBService {
 
   getPublicFeedItem() : Observable<FeedItem[]> {
     this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed');
-    this.feeds = this.feedItemCollection.snapshotChanges().pipe(
+    this.feeds = this.feedItemCollection.snapshotChanges().pipe(take(1), 
       map(actions => {
         return actions.map(a => {
           const data  = a.payload.doc.data();
@@ -319,7 +353,7 @@ export class FirebaseDBService {
                                   .limit(limit));
     }
 
-    this.feeds = this.feedItemCollection.snapshotChanges().pipe(
+    this.feeds = this.feedItemCollection.snapshotChanges().pipe(take(1),
       map(actions => {
         return actions.map(a => {
           const data  = a.payload.doc.data();
@@ -352,6 +386,99 @@ export class FirebaseDBService {
             reject("Can't find user profile with handle : " + handle);
           }
         });
+    });
+  }
+
+  editMusicMetadata(doc_path: string, album: string, title: string) : Promise<any> {
+    
+    return new Promise((resolve, reject) => { 
+      this.objFirestore.doc(doc_path).get().subscribe(res => {
+        if (res.exists)
+        {
+          if(res.data().hasOwnProperty('metaData')) {
+            res.ref.update({
+              albumName: album,
+              customName: title,
+              'metaData.common.title' : title,
+              'metaData.common.album' : album
+              }).then(() => {
+                console.log("editMusicMetadata album and title updated successfully.");
+
+                resolve();
+              }).catch(error => {
+                console.log("Error updating editMusicMetadata : " + error);
+
+                reject(error);
+              });
+          }
+          else {
+            res.ref.update({
+              albumName: album,
+              customName: title,
+              }).then(() => {
+                console.log("editMusicMetadata album and title updated successfully.");
+
+                resolve();
+              }).catch(error => {
+                console.log("Error updating editMusicMetadata : " + error);
+
+                reject(error);
+              });
+          }
+        }
+      }, error => {
+        console.log("Error getting mp3Collection for editMusicMetadata : " + error);
+
+        reject(error);
+      });
+    });
+  }
+
+  deleteMusicMetadataAndFile(doc_path: string, file_path: string) : Promise<any> {
+
+    return new Promise((resolve, reject) => { 
+      this.objFirestore.doc(doc_path).get().subscribe(res => {
+        console.log(res);
+        this.objFirebaseStorageService.deleteFile(file_path).subscribe(() => {
+          console.log("File deleted from storage ");
+        }, error => {
+          console.log("Error deleting file from storage : " + error);
+        });
+
+        if(res.exists) {
+          if(res.data().feedID) {
+            this.objFirestore.collection("publicFeed").doc(res.data().feedID).delete().then(() => {
+              res.ref.delete().then(() => {
+                resolve();
+              }).catch(error => {
+                console.log("Error deleting file from storage : " + error);
+
+                reject(error);
+              });
+            }).catch(error => {
+              console.log("Error deleting entry from public feed : " + error);
+
+              reject(error);
+            });
+          }
+          else {
+            res.ref.delete().then(() => {
+              resolve();
+            }).catch(error => {
+              console.log("Error deleting file from storage : " + error);
+
+              reject(error);
+            });
+          }
+        }
+        else {
+          resolve();
+        }
+      }, error => {
+        console.log("Error getting mp3Collection for deleteMusicMetadataAndFile : " + error);
+
+        reject(error);
+      });
     });
   }
 }

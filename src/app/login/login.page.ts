@@ -58,7 +58,7 @@ export class LoginPage implements OnInit {
                 console.log("Firebase success: " + JSON.stringify(success)); 
               });
 
-              _me_.objDataService.setProfileData(userData);
+              _me_.objDataService.saveProfileData(userData);
               console.log('Logged into Facebook!', userData);
               _me_.objRouter.navigateByUrl('/tabs');
             })

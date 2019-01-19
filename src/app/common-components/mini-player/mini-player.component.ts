@@ -145,8 +145,12 @@ export class MiniPlayerComponent implements OnInit {
   }
 
   onStop() {
+    // Disable background mode
+    this.backgroundMode.disable();
+    // Clear notification
     this.localNotification.cancel(this.playLocalNotificationID);
 
+    // Stop it now
     this.bUserStopped = true;
     this.bPlaying = false;
     this.mp3File.stop();
@@ -209,9 +213,6 @@ export class MiniPlayerComponent implements OnInit {
           _me_.bPlaying = false;
           // Clear play notification.
           _me_.localNotification.cancel(_me_.playLocalNotificationID);
-
-          // Disable background mode
-          _me_.backgroundMode.disable();
 
           //console.log("In onStatusUpdate Stopped, play pos: " + _me_.playPos);
           clearInterval(_me_.timerToken);

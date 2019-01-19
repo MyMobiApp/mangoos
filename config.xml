@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.mastishka.mgoos" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.mgoos.app" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>MGooS</name>
     <description>A Social Musical App</description>
     <author email="manish.mastishka@gmail.com" href="http://mgoos.com/">MGooS Team</author>
-    <content original-src="index.html" src="https://192.168.43.190:8100" />
+    <content original-src="index.html" src="https://192.168.1.3:8100" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -107,7 +107,7 @@
     <plugin name="cordova-plugin-nativestorage" spec="~2.3.2" />
     <plugin name="cordova-plugin-chooser" spec="~1.2.4" />
     <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
-    <allow-navigation href="https://192.168.43.190:8100" sessionid="21b69e82" />
+    <allow-navigation href="https://192.168.1.3:8100" sessionid="15ec0dc2" />
     <engine name="android" spec="^7.1.4" />
     <engine name="browser" spec="~5.0.4" />
 </widget>

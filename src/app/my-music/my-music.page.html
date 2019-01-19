@@ -27,16 +27,17 @@
         <ion-avatar *ngIf="mp3.thumbnail" slot="start">
             <img [src]="mp3.thumbnail">
           </ion-avatar>
-        <ion-label *ngIf="mp3.data.metaData">{{mp3.data.metaData.common.album}}</ion-label>
-        <ion-text *ngIf="!mp3.data.metaData">{{mp3.data.albumName}}</ion-text>
-        <p *ngIf="mp3.data.metaData">{{mp3.data.metaData.common.title}}</p> 
-        <p *ngIf="!mp3.data.metaData">{{mp3.data.customName}}</p> 
+        <ion-label *ngIf="mp3.metaData">{{mp3.metaData.common.album}}</ion-label>
+        <ion-text *ngIf="!mp3.metaData">{{mp3.albumName}}</ion-text>
+        <p *ngIf="mp3.metaData">{{mp3.metaData.common.title}}</p> 
+        <p *ngIf="!mp3.metaData">{{mp3.customName}}</p>
+        <p>{{mp3.createdAtISO}}</p> 
       </ion-label>
       <ion-buttons slot="end">
-        <ion-button shape="round" color="tertiary" (click)="addToPlaylist(mp3.id, mp3.thumbnail, mp3.data);$event.stopPropagation();">
+        <ion-button shape="round" color="tertiary" (click)="addToPlaylist(mp3.id, mp3.thumbnail, mp3);$event.stopPropagation();">
           <ion-icon slot="icon-only" name="redo"></ion-icon>
         </ion-button>
-        <ion-button shape="round" color="tertiary" (click)="onSettings(mp3.id, mp3.data);presentPopover($event);$event.stopPropagation();">
+        <ion-button shape="round" color="tertiary" (click)="onSettings(mp3.id, mp3);presentPopover($event);$event.stopPropagation();">
           <ion-icon slot="icon-only" name="settings"></ion-icon>
         </ion-button>
       </ion-buttons>
@@ -45,5 +46,12 @@
     <ion-item></ion-item>
     <ion-item></ion-item>
   </ion-list>
+
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="fetchFeedItems($event)">
+      <ion-infinite-scroll-content
+          loadingSpinner="bubbles"
+          loadingText="Loading ...">
+      </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 
 </ion-content>

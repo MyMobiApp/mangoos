@@ -10,6 +10,8 @@ import { PlayService } from '../services/play/play.service';
 })
 export class TabsPage {
 
+  private bDisableUpload: boolean = false;
+
   @ViewChild(MiniPlayerComponent) miniPlayer: MiniPlayerComponent;
 
   constructor(private objDataService: DataService,
@@ -37,6 +39,8 @@ export class TabsPage {
   }
 
   onProgressChange(progress: number) {
+    this.bDisableUpload = (progress == 100) ? false : true;
+
     this.objDataService.setMP3UploadProgress(progress);
   }
 }

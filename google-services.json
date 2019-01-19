@@ -8,9 +8,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:949519506589:android:a5e1ed1b644d5c23",
+        "mobilesdk_app_id": "1:949519506589:android:7f50b5ce8d8cc713",
         "android_client_info": {
-          "package_name": "com.mastishka.mgoos"
+          "package_name": "com.mgoos.app"
         }
       },
       "oauth_client": [

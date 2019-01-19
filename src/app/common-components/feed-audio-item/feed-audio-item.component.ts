@@ -77,4 +77,7 @@ export class FeedAudioItemComponent implements OnInit {
     toast.present();
   }
 
+  onLike() {
+    
+  }
 }

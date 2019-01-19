@@ -1,7 +1,10 @@
 <ion-content padding>
   <ion-list>
-    <ion-item>
-      <ion-button>Share APP link <ion-icon name="share"></ion-icon></ion-button>
+    <ion-item (click)="onShare()">
+      Share APP 
+      <ion-button slot="end">
+        <ion-icon slot="icon-only" name="share"></ion-icon>
+      </ion-button>
     </ion-item>
   </ion-list>
 </ion-content>

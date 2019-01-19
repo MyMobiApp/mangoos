@@ -481,4 +481,38 @@ export class FirebaseDBService {
       });
     });
   }
+
+  searchAlbumOrTitle(searchNiddle: string, handle: string, album: string, offset: string, limit: number) : Observable<FileMetaInfo[]> {
+    let mp3Collection: AngularFirestoreCollection<FileMetaInfo>;
+    if(offset) {
+      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+        .doc(handle).collection(album, ref => ref
+        .where('metaData.common.title', "==", searchNiddle)
+        .where('metaData.common.album', "==", searchNiddle)
+        .orderBy('createdAt', 'desc')
+        .startAfter(offset)
+        .limit(limit));
+    }
+    else {
+      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+        .doc(handle).collection(album, ref => ref
+        .where('metaData.common.title', "==", searchNiddle)
+        .where('metaData.common.album', "==", searchNiddle)
+        .orderBy('createdAt', 'desc')
+        .limit(limit));
+    }
+    
+    let list = mp3Collection.snapshotChanges().pipe(take(1),
+        map(actions => {
+        //alert("Test - 5 : " + actions.length);
+        return actions.map(a => {
+          const data  = a.payload.doc.data();
+          const id    = a.payload.doc.id;
+          return {id, ...data}; 
+        });
+      })
+    );
+
+    return list;
+  }
 }

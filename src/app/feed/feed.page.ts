@@ -14,7 +14,7 @@ export class FeedPage {
  
   private feedItemAry: FeedItem[];
   offset: number  = null;
-  limit: number   = 20;
+  limit: number   = 50;
 
   constructor(private dataService: DataService,
               private firebaseDBService: FirebaseDBService) { }

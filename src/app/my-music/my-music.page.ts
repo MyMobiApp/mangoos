@@ -17,7 +17,7 @@ export class MyMusicPage {
   // https://www.youtube.com/watch?v=Pi6AtssyaNw
 
   offset: string = null;
-  limit: number = 20;
+  limit: number = 50;
 
   percent: any = 0;
   mp3List: any = null;
@@ -92,11 +92,14 @@ export class MyMusicPage {
     await this.objFirestoreDBService.getMusicMetaInfoList(handle, 'default', _me_.offset, _me_.limit)
     .subscribe(list => {
       if(list.length > 0) {
+        const listLength: number = _me_.mp3List ? _me_.mp3List.length : 0;
+
         _me_.offset = list[list.length - 1].createdAt;
         _me_.mp3List = _me_.mp3List ? _me_.mp3List.concat(list) : list;
+
         //_me_.mp3List.sort(_me_.compare);
-        console.log(list);
-        console.log(_me_.mp3List);
+        //console.log(list);
+        //console.log(_me_.mp3List);
 
         for(let key in list) {
           if(list[key].hasOwnProperty('metaData') && 
@@ -104,11 +107,11 @@ export class MyMusicPage {
             list[key].metaData.common.picture[0].hasOwnProperty('data')) {
               let imgBlob = <firebase.firestore.Blob>list[key].metaData.common.picture[0].data;
             
-              _me_.mp3List[key].thumbnail = _me_.objDataService.imgSrc(list[key].metaData.common.picture[0].format, imgBlob.toBase64());
-                //console.log(_me_.mp3List[key].thumbnail);
+              _me_.mp3List[listLength + parseInt(key)].thumbnail = _me_.objDataService.imgSrc(list[key].metaData.common.picture[0].format, imgBlob.toBase64());
+              //.log(_me_.mp3List[listLength + + parseInt(key)].thumbnail);
           }
           let date = new Date(_me_.mp3List[key].createdAtISO);
-          _me_.mp3List[key].createdAtISO = date.toISOString();
+          _me_.mp3List[key].createdAtISO = date.toLocaleDateString();
           //console.log(_me_.mp3List[key]);
         }
       }

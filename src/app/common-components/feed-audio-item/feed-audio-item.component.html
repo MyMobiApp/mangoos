@@ -33,9 +33,9 @@
 
   <ion-row>
     <ion-col>
-      <ion-button slot="start" small color="primary">
-        <ion-icon slot="icon-only" name="thumbs-up"></ion-icon>
-        <div>{{feedItem.likes}}</div>
+      <ion-button size="small" color="primary" (click)="onLike()" *ngIf="false">
+        {{feedItem.likes}}
+        <ion-icon slot="end" name="thumbs-up"></ion-icon>
       </ion-button>
     </ion-col>
     <ion-col center text-center *ngIf="music_metadata">

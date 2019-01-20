@@ -86,25 +86,45 @@ export class MP3SettingsPage implements OnInit {
     await dialog.present();
   }
 
-  deleteMusicFile() {
+  async deleteMusicFile() {
     let _me_ = this;
 
-    const file_path = this.metaInfo.mp3Data.fullPath; 
-    const doc_path = `mp3Collection/${this.dataService.getProfileData().handle}/default/${this.metaInfo.id}`;
+    let alert = await this.alertCtrl.create({
+      header: 'Confirm Delete',
+      message: 'Do you want to delete this file?',
+      buttons: [
+        {
+          text: 'No',
+          role: 'cancel',
+          handler: () => {
+            _me_.popoverCtrl.dismiss();
+            console.log('Cancel clicked');
+          }
+        },
+        {
+          text: 'Yes',
+          handler: () => {
+            const file_path = this.metaInfo.mp3Data.fullPath; 
+            const doc_path = `mp3Collection/${this.dataService.getProfileData().handle}/default/${this.metaInfo.id}`;
 
-    this.firebaseDBService.deleteMusicMetadataAndFile(doc_path, file_path)
-    .then(async () => {
-      let toast = await this.toastCtrl.create({
-        message: 'File deleted successfully.',
-        position: 'top',
-        duration: 3000
-      });
-      toast.present();
-    }).catch(error => {
-      console.log(error);
-    }).finally(() => {
-      _me_.popoverCtrl.dismiss();
+            this.firebaseDBService.deleteMusicMetadataAndFile(doc_path, file_path)
+            .then(async () => {
+              let toast = await this.toastCtrl.create({
+                message: 'File deleted successfully.',
+                position: 'top',
+                duration: 3000
+              });
+              toast.present();
+            }).catch(error => {
+              console.log(error);
+            }).finally(() => {
+              _me_.popoverCtrl.dismiss();
+            });
+          }
+        }
+      ]
     });
+    await alert.present();
   }
 
 }

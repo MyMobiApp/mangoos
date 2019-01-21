@@ -1,4 +1,4 @@
-<app-header sTitle="MGooS"></app-header>
+<app-header sTitle="MGooS" page="feed" (onRefresh)="forceRefresh($event)"></app-header>
 
 <ion-content padding>
     <ion-refresher (ionRefresh)="doRefresh($event)">
@@ -6,7 +6,7 @@
             pullingIcon="arrow-dropdown" 
             pullingText="Pull to refresh" 
             refreshingSpinner="circles" 
-            refreshingText="Refreshing...">
+            refreshingText="">
         </ion-refresher-content>
     </ion-refresher>
 

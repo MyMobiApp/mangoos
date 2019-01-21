@@ -9,7 +9,7 @@ import { UserProfile } from '../services/firebase-db/firebase-db.service';
   styleUrls: ['./my-profile.page.scss']
 })
 export class MyProfilePage implements OnInit {
-  private objUserProfile: UserProfile;
+  public objUserProfile: UserProfile;
 
   constructor(private objDataService: DataService) { }
 

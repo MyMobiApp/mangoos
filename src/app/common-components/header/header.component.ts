@@ -1,7 +1,9 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { PopoverController } from '@ionic/angular';
 
 import { SettingsPage } from '../../settings/settings.page';
+
+type PageType = "feed" | false;
 
 @Component({
   selector: 'app-header',
@@ -11,10 +13,14 @@ import { SettingsPage } from '../../settings/settings.page';
 export class HeaderComponent implements OnInit {
 
   @Input() sTitle: string = "";
+  @Input() page: PageType = false;
 
-  constructor(public popoverCtrl: PopoverController) { }
+  @Output() onRefresh = new EventEmitter();
+
+  constructor(private popoverCtrl: PopoverController) { }
 
   ngOnInit() {
+    
   }
 
   async presentPopover(ev: any) {
@@ -24,6 +30,10 @@ export class HeaderComponent implements OnInit {
       translucent: true
     });
     return await popover.present();
+  }
+
+  doRefresh() {
+    this.onRefresh.emit(true);
   }
 
   close() {

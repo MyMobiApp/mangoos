@@ -1,7 +1,7 @@
 <app-header sTitle="MGooS"></app-header>
 
 <ion-content>
-  <app-progress-bar [progress]="percent" color="primary"></app-progress-bar>
+  <app-progress-bar [progress]="percent" color="primary" (feedAction)="onFeedDone($event)"></app-progress-bar>
 
   <ion-refresher (ionRefresh)="doRefresh($event)">
     <ion-refresher-content 
@@ -15,7 +15,7 @@
   <ion-list>
     <ion-list-header>
       <ion-label *ngIf="!bLoading">
-        Your uploaded MP3s
+        Your uploaded audios
       </ion-label>
       <ion-label *ngIf="bLoading">
         Please wait <ion-spinner></ion-spinner>

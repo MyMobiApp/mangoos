@@ -13,7 +13,7 @@ export class PlaylistPage {
   // Tutorial on reorder
   // https://www.youtube.com/watch?v=8kZTK32PuIg
 
-  private playlist: any;
+  public playlist: any;
   private nCurrentPlayIndex: number = undefined;
 
   constructor(private objPlayService: PlayService,

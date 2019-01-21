@@ -12,15 +12,20 @@ import { DataService } from 'src/app/services/data/data.service';
 export class FeedPage {
   @ViewChild(InfiniteScroll) infiniteScroll: InfiniteScroll;
  
-  private feedItemAry: FeedItem[];
+  public feedItemAry: FeedItem[];
   offset: number  = null;
   limit: number   = 50;
+  publicFeedCount: number = 0;
+  notification: number = 0;
 
   constructor(private dataService: DataService,
               private firebaseDBService: FirebaseDBService) { }
 
   ngOnInit() {
     this.fetchFeedItems(null);
+    /*this.firebaseDBService.onPublicFeedUpdate().subscribe(data => {
+      this.publicFeedCount = data.length;
+    });*/
   }
 
   fetchFeedItems(event) {
@@ -51,6 +56,10 @@ export class FeedPage {
     });
   }
 
+  forceRefresh(event) {
+    this.doRefresh(null);
+  }
+
   doRefresh(event) {
     //console.log('Begin async operation', event);
 
@@ -59,6 +68,8 @@ export class FeedPage {
 
     this.fetchFeedItems(null);
 
-    event.target.complete();
+    if(event) {
+      event.target.complete();
+    }
   }
 }

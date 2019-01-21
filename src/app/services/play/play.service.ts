@@ -81,9 +81,7 @@ export class PlayService {
     this.playIndex = index;
 
     if(bPlay) {
-      setTimeout(() => {
-        this.playItemObserver.next(true);
-      }, 1000);
+      this.playItemObserver.next(true);
     }
   }
 

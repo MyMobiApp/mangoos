@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { DataService } from 'src/app/services/data/data.service';
 import { FirebaseDBService } from 'src/app/services/firebase-db/firebase-db.service';
 
@@ -9,6 +9,8 @@ import { FirebaseDBService } from 'src/app/services/firebase-db/firebase-db.serv
 })
 export class ProgressBarComponent implements OnInit {
   @Input() progress: any;
+  @Output() feedAction =  new EventEmitter();
+
   feedMsg: string = "";
   bUploading: boolean = false;
   bStarting: boolean = true;
@@ -31,7 +33,8 @@ export class ProgressBarComponent implements OnInit {
       _me_.progress   = 0;
       _me_.feedMsg    = "";
 
-      this.dataService.setPublicFeedItem(null);
+      _me_.dataService.setPublicFeedItem(null);
+      _me_.feedAction.emit(true);
       console.log("Document to Public Feed written successfully! : " + docRef.id);
     });
   }
@@ -40,6 +43,7 @@ export class ProgressBarComponent implements OnInit {
     this.bUploading = false;
     this.progress = 0;
     this.feedMsg = "";
+    this.feedAction.emit(false);
   }
 
 }

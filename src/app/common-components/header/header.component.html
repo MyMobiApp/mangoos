@@ -6,6 +6,9 @@
     {{sTitle}}
     <!--<ion-searchbar animated placeholder="{{sTitle}}"></ion-searchbar>-->
     <ion-buttons slot="end">
+      <ion-button *ngIf="page != false" (click)="doRefresh()">
+          <ion-icon slot="icon-only" name="sync"></ion-icon>
+      </ion-button>
       <ion-button (click)="presentPopover($event);">
         <ion-icon slot="icon-only" name="settings"></ion-icon>
       </ion-button>

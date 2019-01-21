@@ -51,18 +51,27 @@ export class MyMusicPage {
     });
   }
 
+  onFeedDone(event) {
+    this.doRefresh(null);
+  }
+
   ionViewDidEnter() {
     console.log('ionViewDidEnter get music files.');
     this.getMusicFiles();
   }
 
   doRefresh(event) {
-    console.log('Begin async Refresh operation', event);
+    //console.log('Begin async Refresh operation', event);
     this.offset = null;
     this.mp3List = null;
 
     this.getMusicFiles();
-    event.target.complete();
+    setTimeout(()=> {
+      if(event) {
+        event.target.complete();
+      }
+    }, 2500);
+    
   }
 
   async addToPlaylist(id: string, img: any, mp3Data: any) {
@@ -169,6 +178,14 @@ export class MyMusicPage {
       event: ev,
       translucent: true
     });
+    popover.onDidDismiss().then(bDone => {
+      if(bDone) {
+        _me_.doRefresh(null);
+      }
+    }).catch(err => {
+      console.log("Popover Error : " + err);
+    });
+    
     return await popover.present();
   }
 

@@ -3,6 +3,7 @@ import { NavParams, AlertController, ToastController, PopoverController } from '
 
 import { FirebaseDBService } from '../services/firebase-db/firebase-db.service';
 import { DataService } from '../services/data/data.service';
+import { MyMusicPage } from '../my-music/my-music.page';
 
 @Component({
   selector: 'app-mp3-settings',
@@ -57,7 +58,8 @@ export class MP3SettingsPage implements OnInit {
           text: 'Cancel',
           role: 'cancel',
           handler: () => {
-            
+            _me_.popoverCtrl.dismiss(false);
+
             console.log('Cancel clicked');
           }
         },
@@ -77,7 +79,7 @@ export class MP3SettingsPage implements OnInit {
             }).catch(error => {
               console.log(error);
             }).finally(() => {
-              _me_.popoverCtrl.dismiss();
+              _me_.popoverCtrl.dismiss(true);
             });
           }
         }
@@ -97,7 +99,8 @@ export class MP3SettingsPage implements OnInit {
           text: 'No',
           role: 'cancel',
           handler: () => {
-            _me_.popoverCtrl.dismiss();
+            _me_.popoverCtrl.dismiss(false);
+
             console.log('Cancel clicked');
           }
         },
@@ -118,7 +121,7 @@ export class MP3SettingsPage implements OnInit {
             }).catch(error => {
               console.log(error);
             }).finally(() => {
-              _me_.popoverCtrl.dismiss();
+              _me_.popoverCtrl.dismiss(true);
             });
           }
         }

@@ -24,17 +24,18 @@ export class MiniPlayerComponent implements OnInit {
 
   private playLocalNotificationID = 99999;
 
-  private mediaStatus: MEDIA_STATUS = MEDIA_STATUS.NONE;
+  public mediaStatus: MEDIA_STATUS = MEDIA_STATUS.NONE;
+  public nDuration:  number = 0;
+  public nTimeSpent: number;
+  public sTimeSpent: string = "00:00";
+  
   private bTimerToggle: boolean = false;
   private bPlaying: boolean = false;
-  private nDuration:  number = 0;
   private timerToken: any;
   private playPos: number = 0;
-  private nTimeSpent: number;
-  private sTimeSpent: string = "00:00";
   private bUserStopped: boolean = false;
   
-  private mp3File: MediaObject = null;
+  private mp3File: any = null;
 
   constructor(private dataService: DataService,
               private playService: PlayService,
@@ -97,7 +98,7 @@ export class MiniPlayerComponent implements OnInit {
     }
   }
 
-  onPlay() {
+  async onPlay() {
     let _me_ = this;
 
     if(this.playService.getPlaylistLength() < 1) {
@@ -108,7 +109,7 @@ export class MiniPlayerComponent implements OnInit {
     let newPlayPos = this.playService.getCurrentPlayIndex();
     let fullPath = this.playService.getCurrentMP3();
     
-    console.log("Old Play Pos: " + this.playPos + ", New Play Pos: " + newPlayPos + ", Full Path: " + fullPath);
+    //console.log("Old Play Pos: " + this.playPos + ", New Play Pos: " + newPlayPos + ", Full Path: " + fullPath);
     if(this.playPos == newPlayPos && _me_.mediaStatus == MEDIA_STATUS.PAUSED) {
       _me_.mp3File.play();
     }
@@ -116,27 +117,31 @@ export class MiniPlayerComponent implements OnInit {
       if(_me_.mp3File && _me_.mediaStatus != MEDIA_STATUS.STOPPED) {
         //console.log("Stopping : " + _me_.playPos);
         _me_.mp3File.stop();
-        _me_.mp3File = null;
       }
 
-      this.objFirebaseStorageService.getMP3DownloadURL(fullPath).then(mp3URL => {
-        _me_.mp3File = _me_.media.create(mp3URL);
+      if(_me_.mp3File == null) {
+        _me_.mp3File = true;
 
-        // Virtual duration now capped to 600 sec or 10 mins
-        _me_.nDuration = _me_.playService.getCurrentDuration();
-    
-        // to listen to plugin events:
-        _me_.subscribeToPlayEvents(_me_.mp3File);
+        await this.objFirebaseStorageService.getMP3DownloadURL(fullPath)
+          .then(mp3URL => {
+            _me_.mp3File = _me_.media.create(mp3URL);
+
+            // Virtual duration now capped to 600 sec or 10 mins
+            _me_.nDuration = _me_.playService.getCurrentDuration();
         
-        // Play MP3 file
-        _me_.bUserStopped = false;
-        _me_.playPos = newPlayPos;
-        _me_.mp3File.play();
-        _me_.playService.triggerPlaylistObserver();
-
-      }).catch(err => {
-        console.log(err);
-      });
+            // to listen to plugin events:
+            _me_.subscribeToPlayEvents(_me_.mp3File);
+            
+            // Play MP3 file
+            _me_.bUserStopped = false;
+            _me_.playPos = newPlayPos;
+            _me_.mp3File.play();
+            _me_.playService.triggerPlaylistObserver();
+      
+          }).catch(err => {
+            console.log(err);
+          });
+      }
     }
   }
 
@@ -202,8 +207,8 @@ export class MiniPlayerComponent implements OnInit {
             id: _me_.playLocalNotificationID,
             title: (mp3Data.hasOwnProperty('metaData') && mp3Data.metaData.common.title) ? mp3Data.metaData.common.title : mp3Data.customName,
             text: `Playing music from album '${(mp3Data.hasOwnProperty('metaData') && mp3Data.metaData.common.album) ? mp3Data.metaData.common.album : mp3Data.albumName}'`,
-            smallIcon: 'res://play',
-            sticky: true
+            sticky: true,
+            sound: null
           });
         }
         case MEDIA_STATUS.PAUSED: {
@@ -213,6 +218,9 @@ export class MiniPlayerComponent implements OnInit {
           _me_.bPlaying = false;
           // Clear play notification.
           _me_.localNotification.cancel(_me_.playLocalNotificationID);
+
+          // Clear mp3File object
+          _me_.mp3File = null;
 
           //console.log("In onStatusUpdate Stopped, play pos: " + _me_.playPos);
           clearInterval(_me_.timerToken);
@@ -274,7 +282,7 @@ export class MiniPlayerComponent implements OnInit {
 
         //_me_.changeDetector.detectChanges();
       }).catch(error => {
-        alert("getCurrentPosition: " + JSON.stringify(error));
+        //alert("getCurrentPosition: " + JSON.stringify(error));
         console.log('Error!', error);
       });
     }, 1000);

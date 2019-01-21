@@ -1,0 +1,27 @@
+keytool password : navya10
+
+#-----------------------------------------------------------------
+# Build release apk
+#-----------------------------------------------------------------
+ionic cordova build android --prod --release
+
+#-----------------------------------------------------------------
+# In C:\Program Files\Java\jdk1.8.0_45\bin
+#-----------------------------------------------------------------
+keytool -genkey -v -keystore mgoos-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mgoos
+
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore mgoos-release-key.jks app-release-unsigned.apk mgoos
+
+#-----------------------------------------------------------------
+#In C:\Program Files (x86)\Android\android-sdk\build-tools\26.0.3
+#-----------------------------------------------------------------
+zipalign -v 4 app-release-unsigned.apk MGooS.apk
+
+apksigner verify MGooS.apk
+
+#--------------------------
+keytool -list -keystore mgoos-release-key.jks
+
+Hex:  4F:A7:4B:C1:60:7A:D9:61:89:02:ED:2A:40:FE:AF:6C:8F:13:84:9E
+Base64: T6dLwWB62WGJAu0qQP6vbI8ThJ4=
+http://tomeko.net/online_tools/hex_to_base64.php

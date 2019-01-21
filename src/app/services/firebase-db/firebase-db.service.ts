@@ -485,7 +485,7 @@ export class FirebaseDBService {
   searchAlbumOrTitle(searchNiddle: string, handle: string, album: string, offset: string, limit: number) : Observable<FileMetaInfo[]> {
     let mp3Collection: AngularFirestoreCollection<FileMetaInfo>;
     if(offset) {
-      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+      mp3Collection = this.objFirestore.collection<FileMetaInfo>('mp3Collection')
         .doc(handle).collection(album, ref => ref
         .where('metaData.common.title', "==", searchNiddle)
         .where('metaData.common.album', "==", searchNiddle)
@@ -494,7 +494,7 @@ export class FirebaseDBService {
         .limit(limit));
     }
     else {
-      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+      mp3Collection = this.objFirestore.collection<FileMetaInfo>('mp3Collection')
         .doc(handle).collection(album, ref => ref
         .where('metaData.common.title', "==", searchNiddle)
         .where('metaData.common.album', "==", searchNiddle)
@@ -514,5 +514,9 @@ export class FirebaseDBService {
     );
 
     return list;
+  }
+
+  onPublicFeedUpdate() : Observable<FeedItem[]> {
+    return this.objFirestore.collection<FeedItem>("publicFeed").valueChanges();
   }
 }

@@ -10,7 +10,7 @@ import { PlayService } from '../services/play/play.service';
 })
 export class TabsPage {
 
-  private bDisableUpload: boolean = false;
+  public bDisableUpload: boolean = false;
 
   @ViewChild(MiniPlayerComponent) miniPlayer: MiniPlayerComponent;
 

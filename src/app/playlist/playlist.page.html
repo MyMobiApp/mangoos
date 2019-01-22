@@ -3,23 +3,27 @@
 <ion-content>
   <ion-list>
     <ion-reorder-group disabled="false" (ionItemReorder)="onReorderPlaylist($event)">
-      <ion-item *ngFor="let mp3 of playlist; let i = index" (click)="Play(i);" [ngStyle]="{'background-color': nCurrentPlayIndex == i ? 'LawnGreen' : ''}">
+      <ion-item *ngFor="let item of playlist; let i = index" (click)="Play(i);" [ngStyle]="{'background-color': nCurrentPlayIndex == i ? 'LawnGreen' : ''}">
         <ion-label>
-            <ion-icon *ngIf="!mp3.thumbnail" name="musical-notes" slot="start"></ion-icon>
-            <ion-avatar *ngIf="mp3.thumbnail" slot="start">
-                <img [src]="mp3.thumbnail">
-              </ion-avatar>
-            <ion-label *ngIf="mp3.mp3Data.metaData">{{mp3.mp3Data.metaData.common.album}}</ion-label>
+            <ion-icon *ngIf="!item.thumbnail" name="musical-notes" slot="start"></ion-icon>
+            <ion-avatar *ngIf="item.thumbnail" slot="start">
+              <img [src]="item.thumbnail">
+            </ion-avatar>
+            <!--<ion-label *ngIf="item.itemData.metaData">{{mp3.mp3Data.metaData.common.album}}</ion-label>
             <ion-text *ngIf="!mp3.mp3Data.metaData">{{mp3.mp3Data.albumName}}</ion-text>
             <p *ngIf="mp3.mp3Data.metaData">{{mp3.mp3Data.metaData.common.title}}</p> 
-            <p *ngIf="!mp3.mp3Data.metaData">{{mp3.mp3Data.customName}}</p> 
+            <p *ngIf="!mp3.mp3Data.metaData">{{mp3.mp3Data.customName}}</p> -->
+            <ion-text>{{item.album}}</ion-text>
+            <p>{{item.title}}</p> 
         </ion-label>
         <ion-buttons slot="end">
-          <ion-button (click)="onRemoveFromPlaylist(mp3);$event.stopPropagation();">
+          <ion-button (click)="onRemoveFromPlaylist(item);$event.stopPropagation();">
             <ion-icon name="close-circle"></ion-icon>
           </ion-button>
         </ion-buttons>
-        <ion-reorder slot="end"></ion-reorder>
+        <ion-reorder slot="end">
+            <!--<ion-icon class="rotate-90" name="swap"></ion-icon>-->
+        </ion-reorder>
       </ion-item>
     </ion-reorder-group>
   </ion-list>

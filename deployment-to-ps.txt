@@ -21,6 +21,7 @@ apksigner verify MGooS.apk
 
 #--------------------------
 keytool -list -keystore mgoos-release-key.jks
+key for Facebook
 
 Hex:  4F:A7:4B:C1:60:7A:D9:61:89:02:ED:2A:40:FE:AF:6C:8F:13:84:9E
 Base64: T6dLwWB62WGJAu0qQP6vbI8ThJ4=

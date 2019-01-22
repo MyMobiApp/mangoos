@@ -35,6 +35,7 @@ export class MiniPlayerComponent implements OnInit {
   private playPos: number = 0;
   private bUserStopped: boolean = false;
   
+  //private mp3File: MediaObject = null;
   private mp3File: any = null;
 
   constructor(private dataService: DataService,

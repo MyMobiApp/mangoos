@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FirebaseDBService, UserProfile, FeedItem } from '../firebase-db/firebase-db.service';
+import { FirebaseDBService, IUserProfile, IFeedItem } from '../firebase-db/firebase-db.service';
 import { Observable } from 'rxjs';
 
 import { DomSanitizer } from '@angular/platform-browser';
@@ -9,7 +9,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 })
 export class DataService {
   private profileData: any;
-  private feedItem: FeedItem = null;
+  private feedItem: IFeedItem = null;
   private mp3UploadProgress: number = 0;
   private mp3UploadObservable: Observable<number>;
   private mp3UploadObserver: any;
@@ -37,11 +37,11 @@ export class DataService {
     return this.mp3UploadProgress;
   }
 
-  public setPublicFeedItem(feedItem: FeedItem) {
+  public setPublicFeedItem(feedItem: IFeedItem) {
     this.feedItem = feedItem;
   }
 
-  public getPublicFeedItem() : FeedItem {
+  public getPublicFeedItem() : IFeedItem {
     return this.feedItem;
   }
 
@@ -52,7 +52,7 @@ export class DataService {
     //alert("In setMP3UploadProgress : "+ progress);
   }
 
-  public getProfileData() : UserProfile {
+  public getProfileData() : IUserProfile {
     //console.log("Returning ProfileData: " + JSON.stringify(this.profileData));
     return this.profileData;
   }
@@ -70,7 +70,7 @@ export class DataService {
     console.log("Saved ProfileData: " + JSON.stringify(this.profileData));
   }
 
-  public addNewProfileData(pd: UserProfile) {
+  public addNewProfileData(pd: IUserProfile) {
     this.profileData = Object.assign({}, pd);
 
     this.fireDBService.registerUser(pd);
@@ -82,5 +82,13 @@ export class DataService {
 
   public imgSrc(format, base64data) {
     return this.sanitizer.bypassSecurityTrustUrl('data:'+format+';base64,' + base64data);
+  }
+
+  public rawImgSrc(format, base64data) : string {
+    return ('data:'+format+';base64,' + base64data);
+  }
+
+  public sanitizeImg(imgData) {
+    return this.sanitizer.bypassSecurityTrustUrl(imgData);
   }
 }

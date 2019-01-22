@@ -17,6 +17,7 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { AngularFireStorageModule } from 'angularfire2/storage';
+import { NativeStorage } from '@ionic-native/native-storage/ngx';
 
 // For Debug
 //import { environment } from '../environments/environment'; 
@@ -41,8 +42,7 @@ import { environment } from '../environments/environment.prod';
   providers: [
     StatusBar,
     SplashScreen,
-    //DataService,
-    //PlayService,
+    NativeStorage,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]

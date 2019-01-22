@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { InfiniteScroll } from '@ionic/angular';
 
-import { FirebaseDBService, FeedItem } from 'src/app/services/firebase-db/firebase-db.service';
+import { FirebaseDBService, IFeedItem } from 'src/app/services/firebase-db/firebase-db.service';
 import { DataService } from 'src/app/services/data/data.service';
 
 @Component({
@@ -12,7 +12,7 @@ import { DataService } from 'src/app/services/data/data.service';
 export class FeedPage {
   @ViewChild(InfiniteScroll) infiniteScroll: InfiniteScroll;
  
-  public feedItemAry: FeedItem[];
+  public feedItemAry: IFeedItem[];
   offset: number  = null;
   limit: number   = 50;
   publicFeedCount: number = 0;

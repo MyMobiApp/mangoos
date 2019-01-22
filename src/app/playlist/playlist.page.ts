@@ -2,6 +2,9 @@ import { Component } from '@angular/core';
 import { PlayService } from '../services/play/play.service';
 import { AlertController } from '@ionic/angular';
 
+import { IPlaylist, LocalStorageService } from '../services/local-storage/local-storage.service';
+import { SafeUrl } from '@angular/platform-browser';
+
 
 @Component({
   selector: 'app-playlist',
@@ -13,10 +16,12 @@ export class PlaylistPage {
   // Tutorial on reorder
   // https://www.youtube.com/watch?v=8kZTK32PuIg
 
-  public playlist: any;
+  public playlist: IPlaylist[];
+
   private nCurrentPlayIndex: number = undefined;
 
   constructor(private objPlayService: PlayService,
+              private objLocalStorage: LocalStorageService,
               private alertCtrl: AlertController) {
     let _me_ = this;
 
@@ -35,7 +40,7 @@ export class PlaylistPage {
   }
 
   loadPlaylist() {
-    this.playlist = this.objPlayService.playlist.map(x => Object.assign({}, x));
+    this.playlist = this.objPlayService.normPlaylist.map(x => Object.assign({}, x));
   }
 
   onReorderPlaylist(indexes){
@@ -56,7 +61,7 @@ export class PlaylistPage {
   async onRemoveFromPlaylist(mp3Obj) {
     let alert = await this.alertCtrl.create({
       header: 'Confirm Delete',
-      message: `Do you want to remove "${(mp3Obj.mp3Data.hasOwnProperty('metaData') && mp3Obj.mp3Data.metaData.common.title) ? mp3Obj.mp3Data.metaData.common.title : mp3Obj.mp3Data.customName}" from playlist?`,
+      message: `Do you want to remove "${(mp3Obj.title)}" from playlist?`,
       buttons: [
         {
           text: 'Cancel',
@@ -68,7 +73,7 @@ export class PlaylistPage {
         {
           text: 'Confirm',
           handler: () => {
-            this.objPlayService.dequeue(mp3Obj.id);
+            this.objPlayService.dequeue(mp3Obj.id, true);
             console.log('Confirm clicked');
           }
         }

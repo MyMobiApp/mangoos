@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { FeedItem, FirebaseDBService, FileMetaInfo } from 'src/app/services/firebase-db/firebase-db.service';
+import { IFeedItem, FirebaseDBService, FileMetaInfo } from 'src/app/services/firebase-db/firebase-db.service';
 import { PlayService } from 'src/app/services/play/play.service';
 import { ProfileService } from 'src/app/services/profile-service/profile-service.service';
 import { DataService } from 'src/app/services/data/data.service';
@@ -11,7 +11,7 @@ import { ToastController } from '@ionic/angular';
   styleUrls: ['./feed-audio-item.component.scss']
 })
 export class FeedAudioItemComponent implements OnInit {
-  @Input() feedItem: FeedItem;
+  @Input() feedItem: IFeedItem;
   feed_profile_img_url: string;
 
   music_album: string = "";
@@ -65,7 +65,7 @@ export class FeedAudioItemComponent implements OnInit {
   }
 
   async onAddToPlaylist() {
-    this.playService.enqueue(this.feedItem.doc_id, this.music_thumbnail, this.music_metadata);
+    this.playService.enqueue(this.feedItem.doc_id, this.music_thumbnail, this.music_metadata, true);
 
     let title = this.music_metadata.hasOwnProperty('metaData') ? this.music_metadata.metaData.common.title : this.music_metadata.customName;
 

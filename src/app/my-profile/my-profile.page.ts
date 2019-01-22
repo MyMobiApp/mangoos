@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { DataService } from '../services/data/data.service';
-import { UserProfile } from '../services/firebase-db/firebase-db.service';
+import { IUserProfile } from '../services/firebase-db/firebase-db.service';
 
 @Component({
   selector: 'app-my-profile',
@@ -9,7 +9,7 @@ import { UserProfile } from '../services/firebase-db/firebase-db.service';
   styleUrls: ['./my-profile.page.scss']
 })
 export class MyProfilePage implements OnInit {
-  public objUserProfile: UserProfile;
+  public objUserProfile: IUserProfile;
 
   constructor(private objDataService: DataService) { }
 

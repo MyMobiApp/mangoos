@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { FileMetaInfo } from '../firebase-db/firebase-db.service';
 import { Observable } from 'rxjs';
+import { IPlaylist, LocalStorageService } from '../local-storage/local-storage.service';
+import { DataService } from '../data/data.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +10,7 @@ import { Observable } from 'rxjs';
 export class PlayService {
   private playIndex: number = 0;
   playlist = Array();
+  normPlaylist = Array();
 
   public  playlistObservable: Observable<number>;
   private playlistObserver: any;
@@ -18,7 +21,8 @@ export class PlayService {
   public  playStopObservable: Observable<number>;
   private playStopObserver: any;
   
-  constructor() {
+  constructor(private objLocalStorage: LocalStorageService,
+              private objDataService: DataService) {
     let _me_ = this; 
     this.playlistObservable = Observable.create(observer => {
       _me_.playlistObserver = observer;
@@ -36,6 +40,26 @@ export class PlayService {
     this.playlistObservable.subscribe(data => {});
     this.playItemObservable.subscribe(data => {});
     this.playStopObservable.subscribe(data => {});
+
+    // Fetch meteInfo of playlist items from server
+    this.objLocalStorage.getPlaylist().then(playlist => {
+      console.log("Reading playlist from local storage");
+      console.log(playlist);
+      //alert(JSON.stringify(playlist));
+      
+      playlist.forEach(item => {
+        let thumbnail = null;
+
+        if(item.thumbnail) {
+          thumbnail = _me_.objDataService.sanitizeImg(item.thumbnail);
+        }
+        
+        _me_.enqueue(item.id, thumbnail, item.metaInfo, false);
+      });
+    }).catch(error => {
+      //alert(error);
+      console.log("Error getting playlist from native storage: " + error);
+    });
   }
 
   getCurrentPlayIndex() {
@@ -85,16 +109,44 @@ export class PlayService {
     }
   }
 
-  enqueue(id: string, img: any, mp3Data: any) {
+  enqueue(id: string, img: any, mp3Data: any, bStore: boolean) {
     this.playlist.push({'id': id, 'thumbnail': img, 'mp3Data': mp3Data});
+
+    this.normPlaylist.push({
+        id: id,
+        album: mp3Data.hasOwnProperty('metaData') ? mp3Data.metaData.common.album : mp3Data.albumName, 
+        title: mp3Data.hasOwnProperty('metaData') ? mp3Data.metaData.common.title : mp3Data.customName, 
+        thumbnail: img,
+        metaInfo: mp3Data
+    });
     
     this.playlistObserver.next(true);
+
+    if(bStore) {
+      let list = this.normPlaylist.map(x => {
+        if(x.thumbnail) {
+          let imgBlob = <firebase.firestore.Blob>x.metaInfo.metaData.common.picture[0].data;
+          x.thumbnail = this.objDataService.rawImgSrc(x.metaInfo.metaData.common.picture[0].format, imgBlob.toBase64());
+        }
+        return x;
+      });
+      this.objLocalStorage.persistPlaylist(list).then(val => {
+        console.log("Wrote playlist to storage ");
+        console.log(val);
+        //alert(JSON.stringify(val));
+      }).catch(error => {
+        console.log("Error writing to native storage: " + error);
+      });
+    }
   }
 
-  dequeue(id: string) {
+  dequeue(id: string, bStore: boolean) {
     let idToMove = this.playlist[this.playIndex].id;
 
     this.playlist.splice(this.playlist.findIndex( element => {
+      return element.id === id;
+    }), 1);
+    this.normPlaylist.splice(this.playlist.findIndex( element => {
       return element.id === id;
     }), 1);
 
@@ -107,6 +159,23 @@ export class PlayService {
     }
 
     this.playlistObserver.next(true);
+
+    if(bStore) {
+      let list = this.normPlaylist.map(x => {
+        if(x.thumbnail) {
+          let imgBlob = <firebase.firestore.Blob>x.metaInfo.metaData.common.picture[0].data;
+          x.thumbnail = this.objDataService.rawImgSrc(x.metaInfo.metaData.common.picture[0].format, imgBlob.toBase64());
+        }
+        return x;
+      });
+      this.objLocalStorage.persistPlaylist(list).then(val => {
+        console.log("Wrote playlist to storage ");
+        console.log(val);
+        //alert(JSON.stringify(val));
+      }).catch(error => {
+        console.log("Error writing to native storage: " + error);
+      });;
+    }
   }
 
   moveTo(indexes) {
@@ -123,6 +192,7 @@ export class PlayService {
     });
 
     this.playlist.splice(toIndex, 0, this.playlist.splice(fromIndex, 1)[0]);
+    this.normPlaylist.splice(toIndex, 0, this.playlist.splice(fromIndex, 1)[0]);
   }
 
   adjustPlayIndex(playIndexID:string) {

@@ -71,7 +71,7 @@ export class AppComponent {
           console.log(user);
 
           _me_.objFirebaseDBService.getUserProfile(user.email).then(data => {
-            _me_.objDataService.setProfileData(data);
+            _me_.objDataService.saveProfileData(data);
             
             _me_.zone.run(() => {
               _me_.objRouter.navigateByUrl('/tabs'); //to the page where user navigates after login

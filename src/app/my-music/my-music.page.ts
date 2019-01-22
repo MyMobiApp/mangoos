@@ -75,7 +75,7 @@ export class MyMusicPage {
   }
 
   async addToPlaylist(id: string, img: any, mp3Data: any) {
-    this.objPlayService.enqueue(id, img, mp3Data);
+    this.objPlayService.enqueue(id, img, mp3Data, true);
 
     let title = mp3Data.hasOwnProperty('metaData') ? mp3Data.metaData.common.title : mp3Data.customName;
 

@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { AngularFireStorage } from 'angularfire2/storage';
 import { Observable } from 'rxjs';
 
-import { UserProfile } from '../firebase-db/firebase-db.service';
+import { IUserProfile } from '../firebase-db/firebase-db.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseStorageService {
-  private userProfile: UserProfile;
+  private userProfile: IUserProfile;
 
   constructor(private objFirebaseStorage: AngularFireStorage) { 
     

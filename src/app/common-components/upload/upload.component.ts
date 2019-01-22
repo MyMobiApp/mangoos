@@ -12,7 +12,7 @@ import { Observable } from 'rxjs';
 import { BackgroundMode } from '@ionic-native/background-mode/ngx'
 import { DataService } from 'src/app/services/data/data.service';
 import { Router } from '@angular/router';
-import { FileMetaInfo, FirebaseDBService, FeedItem } from 'src/app/services/firebase-db/firebase-db.service';
+import { FileMetaInfo, FirebaseDBService } from 'src/app/services/firebase-db/firebase-db.service';
 
 @Component({
   selector: 'app-upload',
@@ -150,6 +150,7 @@ export class UploadComponent implements OnInit {
       
       _me_.progress = _me_.task.percentageChanges();
       _me_.progress.subscribe(value => {
+        _me_.progressChange.emit(value);
         _me_.dataService.setMP3UploadProgress(value);
         if(value == 100) {
           // Upload completes: Disable background mode.
@@ -189,6 +190,7 @@ export class UploadComponent implements OnInit {
       const fileInfo: ChooserResult = await (<any>window).chooser
       .getFile("audio/mpeg,audio/apev2,audio/mp4,audio/asf,audio/flac,audio/ogg,audio/aiff,audio/wavpack,audio/riff,audio/musepack");
       //alert(fileInfo.uri);
+      
       _me_.objFile.resolveLocalFilesystemUrl(fileInfo.uri).then(fileSysURL => {
         //alert(JSON.stringify(fileSysURL));
         

@@ -7,7 +7,7 @@ import * as firebase from 'firebase';
 
 import { FirebaseStorageService } from '../firebase-storage/firebase-storage.service';
 
-export interface UserProfile {
+export interface IUserProfile {
   handle:       string;
   email:        string;
   first_name:   string;
@@ -16,7 +16,7 @@ export interface UserProfile {
   picture_url:  string;
 }
 
-export interface FeedItem {
+export interface IFeedItem {
   profile_handle:   string;
   full_name:        string;
   post_datetime:    string;
@@ -59,18 +59,18 @@ export interface FileMetaInfo {
   providedIn: 'root'
 })
 export class FirebaseDBService {
-  private feedItemCollection: AngularFirestoreCollection<FeedItem>;
-  private feeds: Observable<FeedItem[]>;
+  private feedItemCollection: AngularFirestoreCollection<IFeedItem>;
+  private feeds: Observable<IFeedItem[]>;
 
   constructor(private objFirestore: AngularFirestore,
               private objFirebaseStorageService: FirebaseStorageService) { 
     
   }
 
-  registerUser(profileData: UserProfile) {
+  registerUser(profileData: IUserProfile) {
     //this.objFirestore.collection('userProfile', ref => ref.where('email', "==", profileData.email)).snapshotChanges().subscribe(res => {
     this.objFirestore.collection('userProfile', ref => ref.where('email', "==", profileData.email)).get().subscribe(res => {
-      if (res.size > 0)
+      if (!res.empty)
       {
         console.log("Match found.");
         
@@ -151,7 +151,7 @@ export class FirebaseDBService {
     return retVal;
   }
 
-  updateUser(profileData: UserProfile) {
+  updateUser(profileData: IUserProfile) {
     //this.objFirebase.
   }
 
@@ -160,11 +160,11 @@ export class FirebaseDBService {
   }
 
   getFeedItem(id: any) {
-    return this.feedItemCollection.doc<FeedItem>(id).valueChanges();
+    return this.feedItemCollection.doc<IFeedItem>(id).valueChanges();
   }
 
-  updateFeedItem(feeditem: FeedItem, id: any) {
-    return this.feedItemCollection.doc<FeedItem>(id).update(feeditem);
+  updateFeedItem(feeditem: IFeedItem, id: any) {
+    return this.feedItemCollection.doc<IFeedItem>(id).update(feeditem);
   }
 
   deleteDocWithRef(docRef: DocumentReference) {
@@ -207,7 +207,7 @@ export class FirebaseDBService {
     });
   }
 
-  saveItemToPublicFeed(feedItem: FeedItem) : Promise<firebase.firestore.DocumentReference> {
+  saveItemToPublicFeed(feedItem: IFeedItem) : Promise<firebase.firestore.DocumentReference> {
     const db_path         = feedItem.db_path;
     const doc_id          = feedItem.doc_id;
     const post_dateobj   = feedItem.post_dateobj;
@@ -257,14 +257,14 @@ export class FirebaseDBService {
     
     let mp3Collection: AngularFirestoreCollection<FileMetaInfo>;
     if(offset) {
-      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+      mp3Collection = this.objFirestore.collection<IFeedItem>('mp3Collection')
         .doc(handle).collection(album, ref => ref
         .orderBy('createdAt', 'desc')
         .startAfter(offset)
         .limit(limit));
     }
     else {
-      mp3Collection = this.objFirestore.collection<FeedItem>('mp3Collection')
+      mp3Collection = this.objFirestore.collection<IFeedItem>('mp3Collection')
         .doc(handle).collection(album, ref => ref
         .orderBy('createdAt', 'desc')
         .limit(limit));
@@ -325,8 +325,8 @@ export class FirebaseDBService {
     });
   }
 
-  getPublicFeedItem() : Observable<FeedItem[]> {
-    this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed');
+  getPublicFeedItem() : Observable<IFeedItem[]> {
+    this.feedItemCollection = this.objFirestore.collection<IFeedItem>('publicFeed');
     this.feeds = this.feedItemCollection.snapshotChanges().pipe(take(1), 
       map(actions => {
         return actions.map(a => {
@@ -340,15 +340,15 @@ export class FirebaseDBService {
     return this.feeds;
   }
 
-  getPublicFeedItemWithOffset(offset: number, limit: number) : Observable<FeedItem[]> {
+  getPublicFeedItemWithOffset(offset: number, limit: number) : Observable<IFeedItem[]> {
     if(offset) {
-      this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed', ref => ref
+      this.feedItemCollection = this.objFirestore.collection<IFeedItem>('publicFeed', ref => ref
                                   .orderBy('post_dateobj', 'desc')
                                   .startAfter(offset)
                                   .limit(limit));
     }
     else {
-      this.feedItemCollection = this.objFirestore.collection<FeedItem>('publicFeed', ref => ref
+      this.feedItemCollection = this.objFirestore.collection<IFeedItem>('publicFeed', ref => ref
                                   .orderBy('post_dateobj', 'desc')
                                   .limit(limit));
     }
@@ -516,7 +516,7 @@ export class FirebaseDBService {
     return list;
   }
 
-  onPublicFeedUpdate() : Observable<FeedItem[]> {
-    return this.objFirestore.collection<FeedItem>("publicFeed").valueChanges();
+  onPublicFeedUpdate() : Observable<IFeedItem[]> {
+    return this.objFirestore.collection<IFeedItem>("publicFeed").valueChanges();
   }
 }

@@ -63,10 +63,10 @@ export class UploadComponent implements OnInit {
 
     this.objRouter.navigateByUrl("/tabs/(my-music:my-music)");
     this.fileChooser.open().then(uri => {
-      //alert(uri);
+      alert(uri);
 
       _me_.objFile.resolveLocalFilesystemUrl(uri).then(fileSysURL => {
-        //alert(JSON.stringify(fileSysURL));
+        alert(JSON.stringify(fileSysURL));
         console.log("New URL Object: " + JSON.stringify(fileSysURL));
 
         _me_.objFilePath.resolveNativePath(uri) 
@@ -81,9 +81,10 @@ export class UploadComponent implements OnInit {
 
           _me_.objFile.readAsArrayBuffer(dirPath, fileName).then(async buffer => {
             _me_.dataService.setMP3UploadProgress(0);
+            _me_.progressChange.emit(0);
             await _me_.uploadMP3(buffer, fileSysURL.name, 'audio/mpeg');
           }).catch(error => {
-            alert('Read Array Buffer: ' + JSON.stringify(error));
+            alert('Read Array Buffer: ' + error);
             console.log(error);
           });
         })
@@ -150,14 +151,15 @@ export class UploadComponent implements OnInit {
       
       _me_.progress = _me_.task.percentageChanges();
       _me_.progress.subscribe(value => {
-        _me_.progressChange.emit(value);
         _me_.dataService.setMP3UploadProgress(value);
         if(value == 100) {
           // Upload completes: Disable background mode.
           _me_.backgroundMode.disable();
+          alert("Upload completes");
         }
         //alert(value);
       }, (error) => {
+        _me_.backgroundMode.disable();
         _me_.objFirebaseDBService.deleteDocWithRef(docRef);
         console.log("Error: " + error);
       });
@@ -206,19 +208,23 @@ export class UploadComponent implements OnInit {
 
           _me_.objFile.readAsArrayBuffer(dirPath, fileName).then(async buffer => {
             _me_.dataService.setMP3UploadProgress(0);
-            await _me_.uploadMP3(buffer, fileSysURL.name, fileInfo.mediaType);
+            _me_.progressChange.emit(0);
+            await _me_.uploadMP3(buffer, fileSysURL.name, fileInfo.mediaType).then(() => {
+              _me_.progressChange.emit(100);
+            });
           }).catch(error => {
-            alert('Read Array Buffer: ' + JSON.stringify(error));
+            //alert('Read Array Buffer: ' + error);
+            alert('Error reading file, try with different file.')
             console.log(error);
           });
         })
         .catch(err => {
-          alert('Resolve Native Path : ' + err);
+          alert("Can't resolve native path : " + err);
           console.log(err)
         });
         
       }).catch(error => {
-        alert('Local file system URL: ' + JSON.stringify(error));
+        alert("Can't resolve local file system URL: " + error);
         console.log(error);
       });
     })();

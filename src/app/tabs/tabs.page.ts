@@ -39,7 +39,8 @@ export class TabsPage {
   }
 
   onProgressChange(progress: number) {
-    this.bShowUpload = (progress != 100) ? false : true;
+    alert(progress);
+    this.bShowUpload = (progress == 100) ? true : false;
 
     //this.objDataService.setMP3UploadProgress(progress);
   }

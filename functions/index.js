@@ -10,6 +10,8 @@ const mm = require('music-metadata');
 const util = require('util');
 const admin = require('firebase-admin');
 const mime = require('mime-types');
+const base64Img = require('base64-img');
+const uuidv5 = require('uuid/v5');
 //const md5 = require('md5');
 
 admin.initializeApp(functions.config().firebase);
@@ -21,7 +23,9 @@ admin.initializeApp(functions.config().firebase);
 //  response.send("Hello from Firebase!");
 // });
 
-exports.audioUpload = functions.storage.object().onFinalize((object) => {
+exports.audioUpload = functions.storage.object().onFinalize( (object) => {
+
+    const coverImgBucket = "coverImages";
     // The Storage bucket that contains the file.
     const fileBucket = object.bucket; 
     // File path in the bucket.
@@ -48,6 +52,7 @@ exports.audioUpload = functions.storage.object().onFinalize((object) => {
         keyFilename: './mgoos-mvp-firebase-adminsdk-5h938-b9fa3122fe.json'
       });
     
+    const  ciBucket = gcs.bucket(fileBucket);
     // Download file from bucket.
     const bucket = gcs.bucket(fileBucket);
     const tempFilePath = path.join(os.tmpdir(), fileName+"."+ext);
@@ -63,6 +68,35 @@ exports.audioUpload = functions.storage.object().onFinalize((object) => {
         return mm.parseFile(tempFilePath, {native: true});
     }).then(metadata => {
         objMetadata = metadata;
+
+        if(objMetadata.common.hasOwnProperty('picture')) {
+            objMetadata.common.picture.forEach(async (obj, index, ary) => {
+                if(obj.hasOwnProperty('data')) {
+                    var imguuid = uuidv5('app.mgoos.com', uuidv5.DNS);
+                    var reader = new FileReader();
+                    reader.readAsDataURL(obj.data); 
+                    var base64data;
+                    reader.onloadend = await function() {
+                        base64data = reader.result;
+                    };
+                    
+                    base64Img.imgSync('data:'+obj.format+';base64,' + base64data, os.tmpdir(), imguuid);
+                    var file = await ciBucket.upload(os.tmpdir()+'/'+imguuid, {
+                        // Support for HTTP requests made with `Accept-Encoding: gzip`
+                        gzip: true,
+                        metadata: {
+                        // Enable long-lived HTTP caching headers
+                        // Use only if the contents of the file will never change
+                        // (If the contents will change, use cacheControl: 'no-cache')
+                        cacheControl: 'public, max-age=31536000',
+                        },
+                    });
+                    ary[index].data = `${ciBucket}/${imguuid}`;
+                }
+            });
+        }
+        objMetadata.native = null;
+
         sMetadata = util.inspect(metadata, { showHidden: false, depth: null });
         console.log(sMetadata);
         

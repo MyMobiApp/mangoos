@@ -11,7 +11,8 @@ const util = require('util');
 const admin = require('firebase-admin');
 const mime = require('mime-types');
 const base64Img = require('base64-img');
-const uuidv5 = require('uuid/v5');
+const uuidv4 = require('uuid/v4');
+//var FileReader = require('filereader');
 //const md5 = require('md5');
 
 admin.initializeApp(functions.config().firebase);
@@ -23,16 +24,21 @@ admin.initializeApp(functions.config().firebase);
 //  response.send("Hello from Firebase!");
 // });
 
+const settings = {/* your settings... */ timestampsInSnapshots: true};
+admin.firestore().settings(settings);
+
 exports.audioUpload = functions.storage.object().onFinalize( (object) => {
 
-    const coverImgBucket = "coverImages";
     // The Storage bucket that contains the file.
     const fileBucket = object.bucket; 
     // File path in the bucket.
     const filePath = object.name; 
+    if(filePath.search('coverImages') >= 0 ){
+        return;
+    }
     // File content type.
     const contentType = object.contentType; 
-    console.log("Content Type: " + contentType);
+    console.log("Content Type: " + contentType + " - File Bucket: " + fileBucket);
     // Number of times metadata has been generated. New objects have a value of 1.
     const metageneration = object.metageneration; 
 
@@ -72,7 +78,11 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
         if(objMetadata.common.hasOwnProperty('picture')) {
             objMetadata.common.picture.forEach(async (obj, index, ary) => {
                 if(obj.hasOwnProperty('data')) {
-                    var imguuid = uuidv5('app.mgoos.com', uuidv5.DNS);
+                    var imguuid = uuidv4();
+                    var imgExt = mime.extension(obj.format);
+                    //console.write(imgExt);
+                    fs.createWriteStream(os.tmpdir()+'/'+imguuid+'.'+imgExt).write(obj.data);
+                    /*
                     var reader = new FileReader();
                     reader.readAsDataURL(obj.data); 
                     var base64data;
@@ -81,7 +91,9 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
                     };
                     
                     base64Img.imgSync('data:'+obj.format+';base64,' + base64data, os.tmpdir(), imguuid);
-                    var file = await ciBucket.upload(os.tmpdir()+'/'+imguuid, {
+                    */
+                    var file = await ciBucket.upload(os.tmpdir()+'/'+imguuid+'.'+imgExt, {
+                        destination: 'coverImages/'+imguuid+'.'+imgExt,
                         // Support for HTTP requests made with `Accept-Encoding: gzip`
                         gzip: true,
                         metadata: {
@@ -91,7 +103,7 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
                         cacheControl: 'public, max-age=31536000',
                         },
                     });
-                    ary[index].data = `${ciBucket}/${imguuid}`;
+                    ary[index].data = `coverImages/${imguuid}.${imgExt}`;
                 }
             });
         }

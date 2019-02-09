@@ -27,6 +27,12 @@ admin.initializeApp(functions.config().firebase);
 const settings = {/* your settings... */ timestampsInSnapshots: true};
 admin.firestore().settings(settings);
 
+async function asyncForEach(array, callback) {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array);
+    }
+}
+
 exports.audioUpload = functions.storage.object().onFinalize( (object) => {
 
     // The Storage bucket that contains the file.
@@ -58,10 +64,9 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
         keyFilename: './mgoos-mvp-firebase-adminsdk-5h938-b9fa3122fe.json'
       });
     
-    const  ciBucket = gcs.bucket(fileBucket);
     // Download file from bucket.
     const bucket = gcs.bucket(fileBucket);
-    const tempFilePath = path.join(os.tmpdir(), fileName+"."+ext);
+    const tempFilePath = path.join(os.tmpdir(), uuidv4()+"."+ext);
     
     var sMetadata;
     var objMetadata;
@@ -72,27 +77,18 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
         console.log('Audio downloaded locally to', tempFilePath);
 
         return mm.parseFile(tempFilePath, {native: true});
-    }).then(metadata => {
+    }).then( metadata => {
         objMetadata = metadata;
 
         if(objMetadata.common.hasOwnProperty('picture')) {
-            objMetadata.common.picture.forEach(async (obj, index, ary) => {
+            asyncForEach(objMetadata.common.picture, async (obj, index, ary) => {
                 if(obj.hasOwnProperty('data')) {
                     var imguuid = uuidv4();
                     var imgExt = mime.extension(obj.format);
                     //console.write(imgExt);
                     fs.createWriteStream(os.tmpdir()+'/'+imguuid+'.'+imgExt).write(obj.data);
-                    /*
-                    var reader = new FileReader();
-                    reader.readAsDataURL(obj.data); 
-                    var base64data;
-                    reader.onloadend = await function() {
-                        base64data = reader.result;
-                    };
                     
-                    base64Img.imgSync('data:'+obj.format+';base64,' + base64data, os.tmpdir(), imguuid);
-                    */
-                    var file = await ciBucket.upload(os.tmpdir()+'/'+imguuid+'.'+imgExt, {
+                    var file = await bucket.upload(os.tmpdir()+'/'+imguuid+'.'+imgExt, {
                         destination: 'coverImages/'+imguuid+'.'+imgExt,
                         // Support for HTTP requests made with `Accept-Encoding: gzip`
                         gzip: true,
@@ -103,20 +99,35 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
                         cacheControl: 'public, max-age=31536000',
                         },
                     });
-                    ary[index].data = `coverImages/${imguuid}.${imgExt}`;
+                    objMetadata.common.picture[index].data = `coverImages/${imguuid}.${imgExt}`;
+                    
+                    // signedUrls[0] contains the file's public URL
+                    /*objMetadata.common.picture[index].data = await file[0].getSignedUrl({
+                        action: 'read',
+                        expires: '03-09-2491'
+                    });*/
+
+                    console.log("-------------------(1)-------------------");
+                    console.log(objMetadata.common.picture);
+
                 }
             });
         }
         objMetadata.native = null;
+        console.log("-------------------(2)-------------------");
+        console.log(objMetadata.common.picture);
 
         sMetadata = util.inspect(metadata, { showHidden: false, depth: null });
-        console.log(sMetadata);
+        //console.log(sMetadata);
         
         return admin.firestore().collection(`mp3Collection/${handle}/default`)
                     .where("fullPath", "==", filePath)
                     .get();
         
     }).then((querySnapshot) => {
+        console.log("-------------------(3)-------------------");
+        console.log(objMetadata.common.picture);
+
         querySnapshot.forEach(doc => {
             doc.ref.update({'metaData': objMetadata});
         });
@@ -128,4 +139,60 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
         console.error("Error: " + err.message);
     });
 });
-  
+
+/*
+exports.fileMaintenance = functions.https.onCall((data, context) => {
+    // Message text passed from the client.
+    //const text = data.text;
+    // Authentication / user information is automatically added to the request.
+    //const uid = context.auth.uid;
+    //const name = context.auth.token.name || null;
+    //const picture = context.auth.token.picture || null;
+    //const email = context.auth.token.email || null;
+    // fileMaintenance(1,2)
+
+    const fileBucket = "mgoos-mvp.appspot.com";
+
+    var gcs = new Storage({
+        projectId: 'mgoos-mvp',
+        keyFilename: './mgoos-mvp-firebase-adminsdk-5h938-b9fa3122fe.json'
+      });
+    const bucket = gcs.bucket(fileBucket);
+
+    admin.firestore().collection('mp3Collection/manish_mastishka.hotmail.com/default/')
+        .get()
+        .then((querySnapshot) => {
+                querySnapshot.forEach( async (doc) => {
+                    //console.log(doc.data());
+                    //if(false)
+                    try {
+                        if(doc.data().hasOwnProperty('metaData') &&
+                        doc.data().metaData.hasOwnProperty('common') &&
+                        doc.data().metaData.common.hasOwnProperty('picture') &&
+                        doc.data().metaData.common.picture[0].hasOwnProperty('data')) {
+                            let imgFile = bucket.file(encodeURI(doc.data().metaData.common.picture[0].data));
+                            const coverImg = await imgFile.getSignedUrl({
+                                action: 'read',
+                                expires: '03-09-2491'
+                            });
+                            //doc.ref.update({'coverImg': coverImg});
+                            console.log("CoverImage: " + coverImg);
+                        }
+
+                        let musicFile = bucket.file(encodeURI(doc.data().fullPath));
+                        const musicUrl = await musicFile.getSignedUrl({
+                            action: 'read',
+                            expires: '03-09-2491'
+                        });
+                        //doc.ref.update({'musicUrl': musicUrl});
+                        console.log("Music URL: " + musicUrl);
+                    }
+                    catch(error) {
+                        console.log(error);
+                    }
+                });
+        }).catch(error => {
+            console.log(error);
+        });
+});
+*/

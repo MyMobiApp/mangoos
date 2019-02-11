@@ -27,12 +27,6 @@ admin.initializeApp(functions.config().firebase);
 const settings = {/* your settings... */ timestampsInSnapshots: true};
 admin.firestore().settings(settings);
 
-async function asyncForEach(array, callback) {
-    for (let index = 0; index < array.length; index++) {
-      await callback(array[index], index, array);
-    }
-}
-
 exports.audioUpload = functions.storage.object().onFinalize( (object) => {
 
     // The Storage bucket that contains the file.
@@ -77,11 +71,13 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
         console.log('Audio downloaded locally to', tempFilePath);
 
         return mm.parseFile(tempFilePath, {native: true});
-    }).then( metadata => {
+    }).then(async metadata => {
         objMetadata = metadata;
 
         if(objMetadata.common.hasOwnProperty('picture')) {
-            asyncForEach(objMetadata.common.picture, async (obj, index, ary) => {
+            await Promise.all(
+                objMetadata.common.picture.map(async (obj, index, ary) => {
+                    //console.log(obj);
                 if(obj.hasOwnProperty('data')) {
                     var imguuid = uuidv4();
                     var imgExt = mime.extension(obj.format);
@@ -111,7 +107,7 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
                     console.log(objMetadata.common.picture);
 
                 }
-            });
+            }));
         }
         objMetadata.native = null;
         console.log("-------------------(2)-------------------");
@@ -131,11 +127,23 @@ exports.audioUpload = functions.storage.object().onFinalize( (object) => {
         querySnapshot.forEach(doc => {
             doc.ref.update({'metaData': objMetadata});
         });
-        fs.unlinkSync(tempFilePath);
 
-        return writeResult;
+        try{
+            fs.unlinkSync(tempFilePath);
+        }
+        catch(error) {
+            console.log("Error removing temp file: "+ error.message)
+        }
+
+        return 1;
     }).catch( err => {
-        fs.unlinkSync(tempFilePath);
+        try{
+            fs.unlinkSync(tempFilePath);
+        }
+        catch(error) {
+            console.log("Error removing temp file: "+ error.message)
+        }
+        
         console.error("Error: " + err.message);
     });
 });
